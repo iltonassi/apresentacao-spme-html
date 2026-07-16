@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>RH na Encruzilhada Algorítmica · Dr. Ilton Assi · SPME 2026</title>
-<script src="[https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js](https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js)"></script>
-<script src="[https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js](https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js)"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -978,7 +978,6 @@ function renderPresentation(idx){
 function nav(d){location.hash=`slide-${curSlide+d}`;}
 
 function genQR(exId){
-  // Definição essencial que estava faltando
   const el = document.getElementById(`qr-${exId}`);
   if(!el) return;
 
@@ -1010,14 +1009,12 @@ function genQR(exId){
      finalUrl = baseUrl.split('#')[0] + (store.bucket ? '?session=' + store.bucket : '') + '#audience-' + exId;
   }
 
-  // Atualiza o link visível
   const a = document.getElementById("qr-url-"+exId);
   if(a) {
       a.href = finalUrl;
       a.textContent = finalUrl;
   }
 
-  // Desenho do QR Code
   el.innerHTML="";
   if(typeof QRCode === "undefined") {
       el.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(finalUrl)}" alt="QR Code" style="width:100%;height:100%;">`;
@@ -1027,66 +1024,6 @@ function genQR(exId){
     new QRCode(el,{text:finalUrl,width:180,height:180,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
   }catch(e){
     el.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(finalUrl)}" alt="QR Code" style="width:100%;height:100%;">`;
-  }
-}
-
-  let finalUrl = baseUrl;
-  try {
-     const urlObj = new URL(baseUrl);
-     if (store.bucket && !urlObj.searchParams.has('session')) {
-        urlObj.searchParams.set('session', store.bucket);
-     }
-     finalUrl = urlObj.toString().split('#')[0] + '#audience-' + exId;
-  } catch(e) {
-     finalUrl = baseUrl.split('#')[0] + (store.bucket ? '?session=' + store.bucket : '') + '#audience-' + exId;
-  }
-
-  // 1. Atualiza o link visível primeiro (garantia de que nunca ficará travado em "Gerando link...")
-  const a = document.getElementById("qr-url-"+exId);
-  if(a) {
-      a.href = finalUrl;
-      a.textContent = finalUrl;
-  }
-
-  const el = document.getElementById(`qr-${exId}`);
-  if(!el) return;
-
-  // 2. Se a biblioteca estiver bloqueada (Rede/Antivírus), usa uma API externa de backup
-  if(typeof QRCode === "undefined") {
-      el.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(finalUrl)}" alt="QR Code" style="width:100%;height:100%;">`;
-      return;
-  }
-
-  // 3. Desenho normal do QR Code
-  el.innerHTML="";
-  try{
-    new QRCode(el,{text:finalUrl,width:180,height:180,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
-  }catch(e){
-    el.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(finalUrl)}" alt="QR Code" style="width:100%;height:100%;">`;
-  }
-}
-  }
-
-  let finalUrl = baseUrl;
-  try {
-     const urlObj = new URL(baseUrl);
-     if (store.bucket && !urlObj.searchParams.has('session')) {
-        urlObj.searchParams.set('session', store.bucket);
-     }
-     finalUrl = urlObj.toString().split('#')[0] + '#audience-' + exId;
-  } catch(e) {
-     finalUrl = baseUrl.split('#')[0] + (store.bucket ? '?session=' + store.bucket : '') + '#audience-' + exId;
-  }
-
-  el.innerHTML="";
-  try{
-    new QRCode(el,{text:finalUrl,width:180,height:180,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
-  }catch(e){el.innerHTML=`<p style="font-size:.6rem;color:#333;word-break:break-all">${finalUrl}</p>`;}
-
-  const a = document.getElementById("qr-url-"+exId);
-  if(a) {
-      a.href = finalUrl;
-      a.textContent = finalUrl;
   }
 }
 
@@ -1233,7 +1170,7 @@ const store={
     
     if (!this.bucket && !window.location.hash.startsWith("#audience")) {
        try {
-         const res = await fetch('[https://kvdb.io/](https://kvdb.io/)', { method: 'POST' });
+         const res = await fetch('https://kvdb.io/', { method: 'POST' });
          if (res.ok) {
             this.bucket = await res.text();
             localStorage.setItem('spme_bucket', this.bucket);
@@ -1247,7 +1184,7 @@ const store={
   async get(k) {
     if(this.bucket) {
        try {
-          const res = await fetch(`[https://kvdb.io/$](https://kvdb.io/$){this.bucket}/${k}`);
+          const res = await fetch(`https://kvdb.io/${this.bucket}/${k}`);
           if (res.ok) return { value: await res.text() };
        } catch(e) {}
     }
@@ -1257,7 +1194,7 @@ const store={
     mem[k] = v;
     if(this.bucket) {
        try {
-          await fetch(`[https://kvdb.io/$](https://kvdb.io/$){this.bucket}/${k}`, { method: 'POST', body: v });
+          await fetch(`https://kvdb.io/${this.bucket}/${k}`, { method: 'POST', body: v });
        } catch(e) {}
     }
   }
