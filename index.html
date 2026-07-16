@@ -1001,23 +1001,23 @@ let audSyncInterval = null;
 
 async function checkLiveEx() {
   if(!document.getElementById("v-aud").classList.contains("show")) return;
-  
   try {
      const r = await store.get('live_ex');
-     if(r && r.value) {
-        const live = parseInt(r.value);
-        if(live !== audLiveEx) {
-           audLiveEx = live;
-           hasAnsweredCurrent = false; 
-           
-           if(live === 0) {
-              renderAudienceWaiting();
-           } else {
-              renderAudienceForm(live);
-           }
+     let live = 0; // Garante que o padrão é 0 (Aguardando) se não achar nada
+     if(r && r.value) { live = parseInt(r.value); }
+     
+     if(live !== audLiveEx) {
+        audLiveEx = live;
+        hasAnsweredCurrent = false; 
+        if(live === 0) {
+           renderAudienceWaiting();
+        } else {
+           renderAudienceForm(live);
         }
      }
-  } catch(e) {}
+  } catch(e) {
+     if(audLiveEx !== 0) { audLiveEx = 0; renderAudienceWaiting(); }
+  }
 }
 
 function renderAudienceWaiting() {
@@ -1032,10 +1032,7 @@ function renderAudienceWaiting() {
 }
 
 function renderAudienceForm(exId) {
-  if(hasAnsweredCurrent) {
-      showOK();
-      return;
-  }
+  if(hasAnsweredCurrent) { showOK(); return; }
   const ex=EX[exId];
   if(!ex) return;
   const c=document.getElementById("aud-content");
@@ -1047,334 +1044,6 @@ function renderAudienceForm(exId) {
       <div class="ok-box">✅ Resposta enviada com sucesso!<br>
       <small style="font-weight:400;opacity:.8">Aguarde a próxima etapa no telão. Seu celular atualizará sozinho.</small></div>
     </div>`;
-}
-
-function buildAudForm(ex,id){
-  if(ex.type==="text"){
-    return`${ex.context?`<div class="ctx-box">${ex.context}</div>`:""}
-      <p class="aud-q">${ex.question}</p>
-      <textarea id="resp-txt" placeholder="Escreva sua resposta aqui..." rows="5"></textarea>
-      <button class="sub-btn" onclick="submitTxt(${id})">Enviar Resposta →</button>`;
-  }
-  if(ex.type==="singleMC"){
-    return`${ex.context?`<div class="ctx-box">${ex.context}</div>`:""}
-      <p class="aud-q">${ex.question}</p>
-      <div class="opt-grid">${ex.options.map((o,i)=>`<button class="opt-btn" onclick="pickAndSend(${id},${i},this)">${o}</button>`).join("")}</div>`;
-  }
-  if(ex.type==="multiMC"){
-    return ex.questions.map(q=>`
-      <div class="q-block">
-        <p class="aud-q">${q.text}</p>
-        <div class="opt-grid" id="og-${q.key}">
-          ${q.options.map((o,i)=>`<button class="opt-btn" onclick="pick(this,'og-${q.key}')">${o}</button>`).join("")}
-        </div>
-      </div>`).join("")+
-      `<button class="sub-btn" onclick="submitMulti(${id})">Enviar Respostas →</button>`;
-  }
-  if(ex.type==="scenarios"){
-    return ex.scenarios.map(sc=>`
-      <div class="sc-block">
-        <div class="sc-label">Cenário ${sc.id}</div>
-        <p class="aud-q">${sc.text}</p>
-        <div class="opt-grid" id="og-${sc.key}">
-          ${sc.options.map((o,i)=>`<button class="opt-btn" onclick="pick(this,'og-${sc.key}')">${o}</button>`).join("")}
-        </div>
-      </div>`).join("")+
-      `<button class="sub-btn" onclick="submitScenarios(${id})">Enviar Respostas →</button>`;
-  }
-  return"";
-}
-
-function pick(btn,gridId){
-  document.getElementById(gridId).querySelectorAll(".opt-btn").forEach(b=>b.classList.remove("sel"));
-  btn.classList.add("sel");
-}
-
-async function pickAndSend(exId,optIdx,btn){
-  const ex=EX[exId];
-  btn.closest(".opt-grid").querySelectorAll(".opt-btn").forEach(b=>{b.classList.remove("sel");b.disabled=true;});
-  btn.classList.add("sel");
-  await vote(ex.key,optIdx,ex.options.length);
-  hasAnsweredCurrent = true;
-  showOK();
-}
-
-async function submitTxt(exId){
-  const val=(document.getElementById("resp-txt")||{}).value;
-  if(!val||!val.trim()){alert("Por favor, escreva sua resposta.");return;}
-  await pushText(EX[exId].key,val.trim());
-  hasAnsweredCurrent = true;
-  showOK();
-}
-
-async function submitMulti(exId){
-  const ex=EX[exId];
-  for(const q of ex.questions){
-    const sel=document.querySelector(`#og-${q.key} .opt-btn.sel`);
-    if(!sel){alert("Por favor, responda todas as perguntas.");return;}
-  }
-  for(const q of ex.questions){
-    const btns=[...document.querySelectorAll(`#og-${q.key} .opt-btn`)];
-    const sel=document.querySelector(`#og-${q.key} .opt-btn.sel`);
-    await vote(q.key,btns.indexOf(sel),q.options.length);
-  }
-  hasAnsweredCurrent = true;
-  showOK();
-}
-
-async function submitScenarios(exId){
-  const ex=EX[exId];
-  for(const sc of ex.scenarios){
-    const sel=document.querySelector(`#og-${sc.key} .opt-btn.sel`);
-    if(!sel){alert("Por favor, responda todos os cenários.");return;}
-  }
-  for(const sc of ex.scenarios){
-    const btns=[...document.querySelectorAll(`#og-${sc.key} .opt-btn`)];
-    const sel=document.querySelector(`#og-${sc.key} .opt-btn.sel`);
-    await vote(sc.key,btns.indexOf(sel),sc.options.length);
-  }
-  hasAnsweredCurrent = true;
-  showOK();
-}
-
-function showOK(){
-  const f=document.getElementById("aud-form");
-  const ok=document.getElementById("aud-ok");
-  if(f)f.style.display="none";
-  if(ok)ok.style.display="block";
-}
-
-// ═══════════════════════════════════════════════════
-// 6. STORAGE UTILITIES COM SYNC EM NUVEM (KVDB)
-// ═══════════════════════════════════════════════════
-const mem={};
-const store={
-  bucket: null,
-  async init() {
-    const urlParams = new URLSearchParams(window.location.search);
-    this.bucket = urlParams.get('session') || localStorage.getItem('spme_bucket');
-    
-    if (!this.bucket && !window.location.hash.startsWith("#audience")) {
-       try {
-         const res = await fetch('https://kvdb.io/', { method: 'POST' });
-         if (res.ok) {
-            this.bucket = await res.text();
-            localStorage.setItem('spme_bucket', this.bucket);
-            const newUrl = new URL(window.location.href);
-            newUrl.searchParams.set('session', this.bucket);
-            window.history.replaceState(null, '', newUrl.toString());
-         }
-       } catch(e) { console.warn("Falha de conexão com a nuvem.", e); }
-    }
-  },
-  async get(k) {
-    if(this.bucket) {
-       try {
-          const res = await fetch(`https://kvdb.io/${this.bucket}/${k}`);
-          if (res.ok) return { value: await res.text() };
-       } catch(e) {}
-    }
-    return mem[k] ? { value: mem[k] } : null;
-  },
-  async set(k, v) {
-    mem[k] = v;
-    if(this.bucket) {
-       try {
-          await fetch(`https://kvdb.io/${this.bucket}/${k}`, { method: 'POST', body: v });
-       } catch(e) {}
-    }
-  }
-};
-
-async function vote(key,idx,total){
-  let v={};
-  for(let i=0;i<total;i++) v[i]=0;
-  try{
-      const r=await store.get(key);
-      if(r && r.value) {
-          const parsed = JSON.parse(r.value);
-          v = { ...v, ...parsed };
-      }
-  }catch(e){}
-  v[idx]=(v[idx]||0)+1;
-  await store.set(key,JSON.stringify(v));
-}
-
-async function pushText(key,text){
-  let arr=[];
-  try{
-      const r=await store.get(key);
-      if(r && r.value) arr=JSON.parse(r.value);
-  }catch(e){}
-  arr.push({t:text,ts:Date.now()});
-  if(arr.length>60)arr=arr.slice(-60);
-  await store.set(key,JSON.stringify(arr));
-}
-
-async function clearKey(key){
-  await store.set(key,JSON.stringify({}));
-}
-
-// ═══════════════════════════════════════════════════
-// 7. DASHBOARD OTIMIZADO
-// ═══════════════════════════════════════════════════
-function initDashboardDOM(){
-  Object.values(dCharts).forEach(c=>{try{c.destroy();}catch(e){}});
-  Object.keys(dCharts).forEach(k=>delete dCharts[k]);
-  
-  const grid=document.getElementById("dash-grid");
-  grid.innerHTML=[1,2,3,4,5,6].map(id=>`
-    <div class="d-card" id="dc-${id}">
-      <h3>${EX[id].title}</h3>
-      <div class="d-meta">${EX[id].moment}</div>
-      <div id="dci-${id}">
-        <div class="d-cnt" id="cnt-${id}">Buscando...</div>
-        <div id="viz-${id}"></div>
-      </div>
-      <button class="clear-btn" onclick="clearExercise(${id})">🗑 Limpar dados</button>
-    </div>`).join("");
-}
-
-async function refreshDashboardLoop() {
-    if(!document.getElementById("v-dash").classList.contains("show")) return;
-    
-    const tick=document.getElementById("dash-tick");
-    if(tick) tick.innerHTML = "Atualizando...";
-
-    for(let id=1; id<=6; id++) {
-        await loadDashCard(id);
-    }
-    
-    if(tick) tick.innerHTML=`Última atualização: ${new Date().toLocaleTimeString("pt-BR")} <br> ${store.bucket ? "🟢 Nuvem Conectada" : "🔴 Offline"}`;
-}
-
-async function loadDashCard(id){
-  const ex=EX[id];
-  const el=document.getElementById(`dci-${id}`);
-  const viz=document.getElementById(`viz-${id}`);
-  const cnt=document.getElementById(`cnt-${id}`);
-  if(!el || !viz || !cnt) return;
-
-  if(ex.type==="text"){
-    let arr=[];
-    try{const r=await store.get(ex.key);if(r && r.value)arr=JSON.parse(r.value);}catch(e){}
-    cnt.textContent = `${arr.length} respostas`;
-    viz.className = "txt-feed";
-    viz.innerHTML = arr.length ? arr.slice(-8).reverse().map(r=>`<div class="txt-item">${esc(r.t)}</div>`).join("") : "<p class='d-empty'>Nenhuma resposta ainda.</p>";
-  
-  } else if(ex.type==="singleMC"){
-    let v={};
-    try{const r=await store.get(ex.key);if(r && r.value)v=JSON.parse(r.value);}catch(e){}
-    const total=Object.values(v).reduce((a,b)=>a+b,0);
-    const data = ex.options.map((_,i)=>v[i]||0);
-    
-    cnt.textContent = `${total} votos`;
-    const cid = `ch-${id}-m`;
-    
-    if(!dCharts[cid]) {
-        viz.innerHTML = `<div class="chart-box"><canvas id="${cid}"></canvas></div>`;
-        setTimeout(()=>drawChart(cid, ex.options.map(o=>o.replace(/^[✅⚠️🤔❌]\s*/,"").slice(0,25)), data), 50);
-    } else {
-        dCharts[cid].data.datasets[0].data = data;
-        dCharts[cid].update();
-    }
-  
-  } else if(ex.type==="multiMC"){
-    let max=0;
-    const allData = [];
-    for(const q of ex.questions){
-      let v={};
-      try{const r=await store.get(q.key);if(r && r.value)v=JSON.parse(r.value);}catch(e){}
-      const t=Object.values(v).reduce((a,b)=>a+b,0);
-      max=Math.max(max,t);
-      allData.push(q.options.map((_,i)=>v[i]||0));
-    }
-    cnt.textContent = `≈${max} respondentes`;
-    
-    if(viz.innerHTML === "") {
-        let html = "";
-        ex.questions.forEach(q => {
-            html+=`<p style="font-size:.7rem;color:var(--muted);margin:.4rem 0 .15rem">${q.text}</p>
-                   <div style="height:90px"><canvas id="ch-${id}-${q.id}"></canvas></div>`;
-        });
-        viz.innerHTML = html;
-        ex.questions.forEach((q, i) => {
-            setTimeout(()=>drawChart(`ch-${id}-${q.id}`, q.options.map(o=>o.slice(0,18)), allData[i]), 60);
-        });
-    } else {
-        ex.questions.forEach((q, i) => {
-            const chart = dCharts[`ch-${id}-${q.id}`];
-            if(chart) { chart.data.datasets[0].data = allData[i]; chart.update(); }
-        });
-    }
-
-  } else if(ex.type==="scenarios"){
-    let max=0;
-    const allData = [];
-    for(const sc of ex.scenarios){
-      let v={};
-      try{const r=await store.get(sc.key);if(r && r.value)v=JSON.parse(r.value);}catch(e){}
-      const t=Object.values(v).reduce((a,b)=>a+b,0);
-      max=Math.max(max,t);
-      allData.push(sc.options.map((_,i)=>v[i]||0));
-    }
-    cnt.textContent = `≈${max} votos/cenário`;
-    
-    if(viz.innerHTML === "") {
-        let html = "";
-        ex.scenarios.forEach(sc => {
-           html+=`<p style="font-size:.7rem;color:var(--muted);margin:.4rem 0 .1rem">Cenário ${sc.id}: ${sc.text.slice(0,45)}…</p>
-                  <div style="height:80px"><canvas id="ch-${id}-sc${sc.id}"></canvas></div>`;
-        });
-        viz.innerHTML = html;
-        ex.scenarios.forEach((sc, i) => {
-           setTimeout(()=>drawChart(`ch-${id}-sc${sc.id}`, sc.options, allData[i]), 70);
-        });
-    } else {
-        ex.scenarios.forEach((sc, i) => {
-           const chart = dCharts[`ch-${id}-sc${sc.id}`];
-           if(chart) { chart.data.datasets[0].data = allData[i]; chart.update(); }
-        });
-    }
-  }
-}
-
-function drawChart(canvasId,labels,data){
-  const canvas=document.getElementById(canvasId);
-  if(!canvas) return;
-  if(dCharts[canvasId]) try{dCharts[canvasId].destroy();}catch(e){}
-  dCharts[canvasId]=new Chart(canvas,{
-    type:"bar",
-    data:{labels,datasets:[{data,backgroundColor:"rgba(59,130,246,.65)",borderColor:"var(--blue-l)",borderWidth:1}]},
-    options:{
-      responsive:true,maintainAspectRatio:false,animation:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{ticks:{color:"#64748b",font:{size:9}},grid:{color:"#1d2c40"}},
-        y:{ticks:{color:"#64748b",font:{size:9},stepSize:1},grid:{color:"#1d2c40"},beginAtZero:true}
-      }
-    }
-  });
-}
-
-async function clearExercise(id){
-  if(!confirm(`Limpar todos os dados da Dinâmica ${id}?`)) return;
-  const ex=EX[id];
-  if(ex.type==="text") await store.set(ex.key,JSON.stringify([]));
-  else if(ex.type==="singleMC") await store.set(ex.key,JSON.stringify({}));
-  else if(ex.type==="multiMC") for(const q of ex.questions) await store.set(q.key,JSON.stringify({}));
-  else if(ex.type==="scenarios") for(const sc of ex.scenarios) await store.set(sc.key,JSON.stringify({}));
-  refreshDashboardLoop();
-}
-
-function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-
-// ═══════════════════════════════════════════════════
-// 8. ROUTER
-// ═══════════════════════════════════════════════════
-function showView(name){
-  document.querySelectorAll(".view").forEach(v=>v.classList.remove("show"));
-  document.getElementById("v-"+name).classList.add("show");
 }
 
 function route(){
@@ -1390,11 +1059,11 @@ function route(){
   } else if(h === "audience-sync") {
     showView("aud");
     audLiveEx = -1;
+    renderAudienceWaiting(); // IMPEDE A TELA PRETA IMEDIATAMENTE
     checkLiveEx();
     audSyncInterval = setInterval(checkLiveEx, 3000);
     
   } else if(h.startsWith("audience-")){
-    // Fallback antigo caso alguém use um link específico
     showView("aud");
     renderAudienceForm(parseInt(h.split("-")[1]));
     
