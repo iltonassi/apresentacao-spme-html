@@ -978,16 +978,13 @@ function renderPresentation(idx){
 function nav(d){location.hash=`slide-${curSlide+d}`;}
 
 function genQR(exId){
-  const el=document.getElementById(`qr-${exId}`);
-  if(!el||typeof QRCode==="undefined") return;
-
   let baseUrl = location.href.split('#')[0];
   
   if (baseUrl.includes("claude.ai") || baseUrl.startsWith("file://") || baseUrl.includes("localhost")) {
       const stored = localStorage.getItem('public_url_spme');
       if(!stored) {
           const input = prompt(
-            "⚠️ ATENÇÃO ⚠️\nCole a URL pública completa do GitHub Pages aqui:\n(ex: [https://iltonassi.github.io/apresentacao/](https://iltonassi.github.io/apresentacao/))", baseUrl);
+            "⚠️ ATENÇÃO ⚠️\nCole a URL pública completa do GitHub Pages aqui:\n(ex: https://iltonassi.github.io/apresentacao/)", baseUrl);
             
           if(input && input.startsWith("http")) {
               baseUrl = input;
@@ -996,6 +993,43 @@ function genQR(exId){
       } else {
           baseUrl = stored;
       }
+  }
+
+  let finalUrl = baseUrl;
+  try {
+     const urlObj = new URL(baseUrl);
+     if (store.bucket && !urlObj.searchParams.has('session')) {
+        urlObj.searchParams.set('session', store.bucket);
+     }
+     finalUrl = urlObj.toString().split('#')[0] + '#audience-' + exId;
+  } catch(e) {
+     finalUrl = baseUrl.split('#')[0] + (store.bucket ? '?session=' + store.bucket : '') + '#audience-' + exId;
+  }
+
+  // 1. Atualiza o link visível primeiro (garantia de que nunca ficará travado em "Gerando link...")
+  const a = document.getElementById("qr-url-"+exId);
+  if(a) {
+      a.href = finalUrl;
+      a.textContent = finalUrl;
+  }
+
+  const el = document.getElementById(`qr-${exId}`);
+  if(!el) return;
+
+  // 2. Se a biblioteca estiver bloqueada (Rede/Antivírus), usa uma API externa de backup
+  if(typeof QRCode === "undefined") {
+      el.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(finalUrl)}" alt="QR Code" style="width:100%;height:100%;">`;
+      return;
+  }
+
+  // 3. Desenho normal do QR Code
+  el.innerHTML="";
+  try{
+    new QRCode(el,{text:finalUrl,width:180,height:180,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){
+    el.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(finalUrl)}" alt="QR Code" style="width:100%;height:100%;">`;
+  }
+}
   }
 
   let finalUrl = baseUrl;
