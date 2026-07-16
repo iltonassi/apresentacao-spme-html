@@ -1,0 +1,1357 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>RH na Encruzilhada Algorítmica · Dr. Ilton Assi · SPME 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080d16;--surf:#0e1520;--surf2:#16202e;--brd:#1d2c40;
+  --blue:#3b82f6;--blue-l:#60a5fa;--blue-bg:rgba(59,130,246,.1);
+  --red:#ef4444;--red-l:#f87171;--red-bg:rgba(239,68,68,.1);
+  --grn:#10b981;--grn-l:#34d399;--grn-bg:rgba(16,185,129,.1);
+  --gold:#f59e0b;--gold-l:#fbbf24;--gold-bg:rgba(245,158,11,.1);
+  --slate:#94a3b8;
+  --txt:#e2e8f0;--muted:#64748b;--subtle:#334155;--cite:#475569;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.view{display:none;height:100vh;width:100vw;flex-direction:column}
+.view.show{display:flex}
+
+/* ── NAV BAR ── */
+#nav-bar{
+  display:flex;align-items:center;gap:1rem;padding:.6rem 1.5rem;
+  border-top:1px solid var(--brd);background:var(--surf);flex-shrink:0;position:relative;
+}
+.nb-btn{background:var(--surf2);border:1px solid var(--brd);color:var(--txt);
+  border-radius:6px;padding:.35rem .8rem;cursor:pointer;font-size:.82rem}
+.nb-btn:disabled{opacity:.3;cursor:default}
+.nb-btn:not(:disabled):hover{border-color:var(--blue);color:var(--blue-l)}
+#ctr{font-size:.8rem;color:var(--muted);min-width:55px;text-align:center}
+#btn-dash{
+  position:absolute;right:1.5rem;
+  background:var(--gold-bg);border:1px solid rgba(245,158,11,.3);
+  color:var(--gold-l);border-radius:6px;padding:.35rem .9rem;cursor:pointer;font-size:.8rem}
+#btn-dash:hover{background:rgba(245,158,11,.2)}
+
+/* ── SLIDE WRAPPER ── */
+#slide-wrap{flex:1;overflow:hidden;position:relative}
+.slide{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  justify-content:center;align-items:flex-start;
+  padding:2.5rem 3.5rem 2rem;overflow:hidden;
+  opacity:0;transition:opacity .25s ease;pointer-events:none;
+}
+.slide.active{opacity:1;pointer-events:all}
+
+/* ── CITATION ── */
+.cite{
+  position:absolute;bottom:.9rem;left:3.5rem;
+  font-size:.65rem;color:var(--cite);font-style:italic;max-width:70%;line-height:1.4;
+}
+
+/* ── SECTION LEFT BORDER ── */
+.s-ctx{border-left:5px solid var(--slate);padding-left:1.5rem}
+.s-dado{border-left:5px solid var(--blue);padding-left:1.5rem}
+.s-poder{border-left:5px solid var(--red);padding-left:1.5rem}
+.s-futuro{border-left:5px solid var(--grn);padding-left:1.5rem}
+.s-fw{border-left:5px solid var(--gold);padding-left:1.5rem}
+
+/* ── TYPOGRAPHY ── */
+.eyebrow{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:.6rem}
+.eyebrow.blue{color:var(--blue-l)}
+.eyebrow.red{color:var(--red-l)}
+.eyebrow.green{color:var(--grn-l)}
+.eyebrow.gold{color:var(--gold-l)}
+h1.slide-title{font-size:clamp(2rem,5.5vw,3.5rem);font-weight:900;
+  letter-spacing:-.03em;line-height:1.05;margin-bottom:.75rem}
+h2.slide-title{font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:800;
+  letter-spacing:-.02em;line-height:1.15;margin-bottom:.75rem}
+.lead{font-size:clamp(.9rem,1.8vw,1.05rem);color:var(--muted);
+  line-height:1.75;max-width:820px;margin-bottom:1.2rem}
+
+/* ── COVER ── */
+.slide-cover{
+  align-items:center;text-align:center;
+  background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(59,130,246,.12),transparent 70%);
+}
+.cover-line{width:60px;height:3px;background:linear-gradient(90deg,var(--blue),var(--grn));margin:.8rem auto 1.2rem}
+.cover-meta{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;
+  font-size:.78rem;color:var(--subtle);margin-top:1.5rem}
+.cover-meta span{display:flex;align-items:center;gap:.35rem}
+
+/* ── CARD GRIDS ── */
+.cards{display:grid;gap:.75rem;margin-top:1rem;width:100%;max-width:900px}
+.cards-2{grid-template-columns:1fr 1fr}
+.cards-3{grid-template-columns:repeat(3,1fr)}
+.cards-4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:700px){.cards-2,.cards-3,.cards-4{grid-template-columns:1fr}}
+.card{background:var(--surf2);border:1px solid var(--brd);border-radius:10px;padding:1.1rem 1.2rem}
+.card.blue-b{border-left:3px solid var(--blue)}
+.card.red-b{border-left:3px solid var(--red)}
+.card.grn-b{border-left:3px solid var(--grn)}
+.card.gold-b{border-left:3px solid var(--gold)}
+.card-icon{font-size:1.2rem;margin-bottom:.4rem}
+.card strong{font-size:.88rem;display:block;margin-bottom:.3rem}
+.card small{font-size:.78rem;color:var(--muted);line-height:1.5}
+
+/* ── STAT BIG ── */
+.stat-block{text-align:center;max-width:800px;margin:0 auto;width:100%}
+.stat-pre{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.stat-num{font-size:clamp(5rem,16vw,9rem);font-weight:900;letter-spacing:-.05em;line-height:1}
+.stat-num.blue{color:var(--blue-l)}
+.stat-num.red{color:var(--red-l)}
+.stat-num.gold{color:var(--gold-l)}
+.stat-label{font-size:clamp(.95rem,2.2vw,1.2rem);color:var(--txt);max-width:620px;
+  margin:.6rem auto;line-height:1.6}
+.stat-sub{font-size:.88rem;color:var(--muted)}
+
+/* ── SECTION HEADER SLIDE ── */
+.slide-sec{
+  justify-content:flex-start;padding-top:3.5rem;
+}
+.sec-num{font-size:7rem;font-weight:900;opacity:.06;line-height:1;
+  margin-bottom:-.5rem;color:white}
+.sec-label{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.sec-title{font-size:clamp(3rem,8vw,5.5rem);font-weight:900;letter-spacing:-.04em;margin:.2rem 0}
+.sec-sub{font-size:clamp(.9rem,1.8vw,1.1rem);color:var(--muted);max-width:550px;line-height:1.6}
+
+/* ── COMPARISON COLS ── */
+.comp-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;
+  margin-top:1rem;max-width:900px;width:100%}
+.comp-col{background:var(--surf2);border:1px solid var(--brd);border-radius:10px;padding:1.2rem}
+.comp-col-head{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+  font-weight:700;padding-bottom:.75rem;border-bottom:1px solid var(--brd);margin-bottom:.75rem}
+.comp-col.blue .comp-col-head{color:var(--blue-l);border-color:rgba(59,130,246,.3)}
+.comp-col.grn .comp-col-head{color:var(--grn-l);border-color:rgba(16,185,129,.3)}
+.comp-col.red .comp-col-head{color:var(--red-l);border-color:rgba(239,68,68,.3)}
+.comp-col ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.comp-col li{font-size:.85rem;color:var(--muted);display:flex;gap:.5rem;line-height:1.4}
+.comp-col.blue li::before{content:'▸';color:var(--blue-l);flex-shrink:0}
+.comp-col.grn li::before{content:'▸';color:var(--grn-l);flex-shrink:0}
+.comp-col.red li::before{content:'▸';color:var(--red-l);flex-shrink:0}
+
+/* ── PULL QUOTE ── */
+.pquote{
+  border-left:3px solid var(--blue-l);background:var(--blue-bg);
+  border-radius:0 8px 8px 0;padding:.9rem 1.2rem;
+  font-style:italic;font-size:.95rem;line-height:1.6;
+  color:var(--txt);max-width:820px;margin-top:.75rem;
+}
+.pquote.red{border-color:var(--red-l);background:var(--red-bg)}
+.pquote.grn{border-color:var(--grn-l);background:var(--grn-bg)}
+.pquote.gold{border-color:var(--gold-l);background:var(--gold-bg)}
+
+/* ── STAT ROW (3 stats) ── */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;
+  margin-top:1rem;max-width:900px;width:100%}
+.stat-mini{background:var(--surf2);border:1px solid var(--brd);
+  border-radius:10px;padding:1.2rem;text-align:center}
+.stat-mini .val{font-size:clamp(2rem,5vw,3rem);font-weight:900;letter-spacing:-.03em}
+.stat-mini .val.red{color:var(--red-l)}
+.stat-mini .val.gold{color:var(--gold-l)}
+.stat-mini .val.blue{color:var(--blue-l)}
+.stat-mini .lbl{font-size:.78rem;color:var(--muted);margin-top:.4rem;line-height:1.5}
+.stat-src{font-size:.7rem;color:var(--subtle);margin-top:.75rem}
+
+/* ── BULLET LIST ── */
+.blist{list-style:none;display:flex;flex-direction:column;gap:.7rem;
+  max-width:820px;margin-top:.5rem}
+.blist li{display:flex;gap:.7rem;font-size:.95rem;color:var(--muted);
+  align-items:flex-start;line-height:1.55}
+.blist li .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:7px}
+.blist li .dot.blue{background:var(--blue-l)}
+.blist li .dot.red{background:var(--red-l)}
+.blist li .dot.grn{background:var(--grn-l)}
+.blist li .dot.gold{background:var(--gold-l)}
+
+/* ── DDD FRAMEWORK ── */
+.ddd-wrap{display:flex;align-items:center;gap:.75rem;
+  margin-top:1rem;max-width:900px;width:100%;flex-wrap:wrap}
+.ddd-card{flex:1;min-width:170px;background:var(--surf2);
+  border:1px solid var(--brd);border-radius:10px;padding:1.2rem;text-align:center}
+.ddd-n{width:34px;height:34px;border-radius:50%;background:var(--blue-bg);
+  border:2px solid var(--blue);color:var(--blue-l);font-weight:800;font-size:.82rem;
+  display:flex;align-items:center;justify-content:center;margin:0 auto .75rem}
+.ddd-card strong{font-size:.82rem;letter-spacing:.04em;display:block;margin-bottom:.4rem}
+.ddd-card p{font-size:.78rem;color:var(--muted);line-height:1.5}
+.ddd-arr{font-size:1.4rem;color:var(--subtle);flex-shrink:0}
+
+/* ── MATRIX TABLE ── */
+.mtx-wrap{width:100%;max-width:940px;overflow-x:auto;margin-top:.75rem}
+.mtx{width:100%;border-collapse:collapse;font-size:.74rem}
+.mtx th,.mtx td{border:1px solid var(--brd);padding:.55rem .7rem;text-align:left}
+.mtx th{background:var(--surf2);color:var(--muted);font-weight:700;
+  font-size:.68rem;text-transform:uppercase;letter-spacing:.04em}
+.mtx td:first-child{color:var(--txt);font-weight:600;min-width:110px}
+.mtx .c-hi{background:var(--grn-bg);color:var(--grn-l)}
+.mtx .c-md{background:var(--gold-bg);color:var(--gold-l)}
+.mtx .c-lo{background:var(--red-bg);color:var(--red-l)}
+
+/* ── PRINCIPLES ── */
+.princ-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.65rem;
+  margin-top:1rem;max-width:940px;width:100%}
+@media(max-width:700px){.princ-grid{grid-template-columns:1fr 1fr}}
+.princ{border-radius:9px;padding:.9rem;text-align:center;display:flex;flex-direction:column;gap:.4rem}
+.princ strong{font-size:.72rem;display:block}
+.princ span{font-size:.72rem;color:var(--muted);line-height:1.4}
+.princ.blue{background:var(--blue-bg);border:1px solid rgba(59,130,246,.25)}
+.princ.red{background:var(--red-bg);border:1px solid rgba(239,68,68,.25)}
+.princ.grn{background:var(--grn-bg);border:1px solid rgba(16,185,129,.25)}
+.princ.gold{background:var(--gold-bg);border:1px solid rgba(245,158,11,.25)}
+.princ.slate{background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.2)}
+
+/* ── QR SLIDE ── */
+.qr-wrap{display:grid;grid-template-columns:1fr 220px;gap:2.5rem;
+  align-items:center;max-width:900px;width:100%;text-align:left}
+.qr-badge{display:inline-block;padding:.28rem .8rem;border-radius:999px;
+  font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+  background:var(--blue-bg);border:1px solid rgba(59,130,246,.35);
+  color:var(--blue-l);margin-bottom:.75rem}
+.qr-instr{background:var(--surf2);border:1px solid var(--brd);
+  border-radius:8px;padding:.75rem 1rem;font-size:.82rem;color:var(--muted);
+  display:flex;align-items:center;gap:.6rem;margin:.75rem 0 .5rem}
+.qr-box{background:white;border-radius:10px;padding:10px;
+  width:200px;height:200px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qr-box canvas,.qr-box img{max-width:100%;max-height:100%}
+.qr-url{font-size:.65rem;color:var(--muted);word-break:break-all;
+  font-family:monospace;margin-top:.4rem;line-height:1.5}
+
+/* ── CONCLUSION ── */
+.conc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;
+  margin-top:1rem;max-width:920px;width:100%}
+.conc-card{background:var(--surf2);border:1px solid var(--brd);
+  border-radius:10px;padding:1.2rem}
+.conc-tag{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  font-weight:700;margin-bottom:.5rem}
+
+/* ── CTA SLIDE ── */
+.cta-slide{align-items:center;text-align:center;
+  background:radial-gradient(ellipse 70% 50% at 50% 100%,rgba(59,130,246,.1),transparent 70%)}
+.cta-tags{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin:1rem 0}
+.tag-pill{padding:.28rem .75rem;border-radius:999px;font-size:.72rem;
+  background:var(--blue-bg);border:1px solid rgba(59,130,246,.3);color:var(--blue-l)}
+.cta-q{background:var(--surf2);border:1px solid var(--brd);border-radius:10px;
+  padding:1.2rem 1.5rem;max-width:580px;font-size:1rem;line-height:1.7;margin-top:1rem}
+
+/* ═══════════════════════════════════════
+   AUDIENCE VIEW
+════════════════════════════════════════ */
+#v-aud{
+  overflow-y:auto;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(59,130,246,.08),transparent 60%),var(--bg);
+}
+.aud-card{width:100%;max-width:580px;padding:2rem 1.5rem;margin:1.5rem}
+.aud-badge{display:inline-block;padding:.28rem .8rem;border-radius:999px;
+  font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+  background:var(--blue-bg);border:1px solid rgba(59,130,246,.35);
+  color:var(--blue-l);margin-bottom:.75rem}
+.aud-title{font-size:1.4rem;font-weight:800;margin-bottom:1.2rem;line-height:1.25}
+.ctx-box{background:var(--surf2);border:1px solid var(--brd);
+  border-radius:9px;padding:.9rem 1.1rem;font-size:.85rem;
+  color:var(--muted);line-height:1.6;margin-bottom:1rem}
+.aud-q{font-size:.98rem;font-weight:600;margin-bottom:.65rem;color:var(--txt)}
+.opt-grid{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1rem}
+.opt-btn{background:var(--surf2);border:1px solid var(--brd);
+  border-radius:9px;color:var(--txt);padding:.8rem 1rem;text-align:left;
+  cursor:pointer;font-size:.88rem;transition:all .15s;line-height:1.4}
+.opt-btn:hover{border-color:rgba(59,130,246,.4);background:var(--blue-bg)}
+.opt-btn.sel{border-color:var(--blue-l);background:var(--blue-bg);color:var(--blue-l)}
+.sc-block{margin-bottom:1.4rem}
+.sc-label{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--blue-l);font-weight:700;margin-bottom:.3rem}
+.q-block{margin-bottom:1.3rem}
+textarea{width:100%;background:var(--surf2);border:1px solid var(--brd);
+  border-radius:9px;color:var(--txt);padding:.8rem 1rem;font-size:.88rem;
+  resize:vertical;font-family:inherit;line-height:1.6;outline:none;margin-bottom:.75rem}
+textarea:focus{border-color:rgba(59,130,246,.5)}
+textarea::placeholder{color:var(--subtle)}
+.sub-btn{width:100%;padding:.9rem;background:var(--blue);border:none;
+  border-radius:9px;color:white;font-weight:700;font-size:.95rem;cursor:pointer}
+.sub-btn:hover{background:var(--blue-l)}
+.ok-box{background:var(--grn-bg);border:1px solid rgba(16,185,129,.3);
+  border-radius:10px;padding:1.5rem;text-align:center;
+  color:var(--grn-l);font-size:1rem;font-weight:600;line-height:1.6}
+
+/* ═══════════════════════════════════════
+   DASHBOARD VIEW
+════════════════════════════════════════ */
+#v-dash{overflow-y:auto}
+#dash-head{
+  padding:1rem 1.5rem;border-bottom:1px solid var(--brd);
+  background:var(--surf);display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;position:sticky;top:0;z-index:10;
+}
+#dash-head h2{font-size:1rem;font-weight:700}
+.dash-back{background:var(--surf2);border:1px solid var(--brd);
+  color:var(--txt);border-radius:6px;padding:.3rem .75rem;cursor:pointer;font-size:.8rem}
+#dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1rem;padding:1.25rem}
+.d-card{background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:1.1rem}
+.d-card h3{font-size:.82rem;font-weight:700;margin-bottom:.2rem}
+.d-meta{font-size:.72rem;color:var(--muted);margin-bottom:.65rem}
+.d-cnt{display:inline-block;padding:.18rem .55rem;border-radius:999px;
+  font-size:.68rem;background:var(--blue-bg);border:1px solid rgba(59,130,246,.3);
+  color:var(--blue-l);font-weight:700;margin-bottom:.5rem}
+.chart-box{position:relative;height:130px;margin-top:.4rem}
+.txt-feed{display:flex;flex-direction:column;gap:.4rem;max-height:180px;overflow-y:auto}
+.txt-item{background:var(--surf2);border-radius:7px;padding:.55rem .7rem;
+  font-size:.78rem;color:var(--muted);line-height:1.5;border:1px solid var(--brd)}
+.d-empty{color:var(--subtle);font-size:.78rem;padding:.5rem 0}
+.clear-btn{font-size:.68rem;color:var(--red-l);background:none;border:none;
+  cursor:pointer;margin-top:.4rem;opacity:.7}
+.clear-btn:hover{opacity:1}
+.dash-tick{font-size:.68rem;color:var(--subtle);text-align:center;
+  padding:.6rem;border-top:1px solid var(--brd);margin-top:.5rem}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--subtle);border-radius:2px}
+/* ── PROGRESS BAR ── */
+#progress-bar{
+  position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--grn));
+  transition:width .3s ease;z-index:100;pointer-events:none;
+}
+/* ── QR URL LINK ── */
+.qr-url-link{
+  display:flex;align-items:center;gap:.5rem;margin-top:.4rem;
+}
+.qr-url-link a{
+  font-size:.65rem;color:var(--blue-l);word-break:break-all;
+  font-family:monospace;line-height:1.5;text-decoration:none;flex:1;
+}
+.qr-url-link a:hover{text-decoration:underline}
+.copy-btn{
+  background:var(--surf2);border:1px solid var(--brd);color:var(--muted);
+  border-radius:5px;padding:.2rem .5rem;cursor:pointer;font-size:.65rem;white-space:nowrap;
+  flex-shrink:0;
+}
+.copy-btn:hover{color:var(--blue-l);border-color:var(--blue)}
+</style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:0%"></div>
+<!-- ══════════════ PRESENTATION VIEW ══════════════ -->
+<div id="v-pres" class="view">
+  <div id="slide-wrap"></div>
+  <div id="nav-bar">
+    <button class="nb-btn" id="btn-prev" onclick="nav(-1)">◀</button>
+    <span id="ctr">1/26</span>
+    <button class="nb-btn" id="btn-next" onclick="nav(1)">▶</button>
+    <button id="btn-dash" onclick="location.hash='dashboard'">📊 Respostas ao Vivo</button>
+  </div>
+</div>
+
+<!-- ══════════════ AUDIENCE VIEW ══════════════ -->
+<div id="v-aud" class="view">
+  <div class="aud-card" id="aud-content"></div>
+</div>
+
+<!-- ══════════════ DASHBOARD VIEW ══════════════ -->
+<div id="v-dash" class="view">
+  <div id="dash-head">
+    <h2>📊 Respostas em Tempo Real</h2>
+    <button class="dash-back" onclick="history.back()">← Voltar</button>
+  </div>
+  <div id="dash-grid"></div>
+  <p class="dash-tick" id="dash-tick">Atualiza a cada 5 s</p>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// 1. EXERCISE DATA
+// ═══════════════════════════════════════════════════
+const EX = {
+  1:{
+    title:"Dinâmica 1 · Onde Você Está na Encruzilhada?",
+    moment:"Abertura — primeiros 5 min",
+    type:"multiMC",
+    questions:[
+      {id:"q1",text:"Sua organização usa IA em processos de RH?",
+       options:["Sim, extensivamente","Sim, em algumas áreas","Planejando implementar","Não e sem planos","Não sei"],key:"ex1q1"},
+      {id:"q2",text:"Qual é sua maior preocupação sobre IA em RH?",
+       options:["Viés algorítmico","Substituição humana","Privacidade/vigilância","Falta de transparência","Custo de implementação","Nenhuma"],key:"ex1q2"},
+      {id:"q3",text:"Em qual área vê maior potencial da IA em RH?",
+       options:["Recrutamento e seleção","Gestão de desempenho","Treinamento/desenvolvimento","Análise preditiva","Experiência do funcionário"],key:"ex1q3"}
+    ]
+  },
+  2:{
+    title:"Dinâmica 2 · O Caso do Algoritmo de Contratação",
+    moment:"Após Eixo 1 — DADO",
+    type:"text",
+    context:"A TechCorp implementou IA para triagem de currículos, reduzindo o tempo de contratação em 60%. Após seis meses, uma auditoria revelou que o sistema rejeitava sistematicamente candidatos de universidades menos prestigiadas, mesmo com qualificações equivalentes ao histórico de contratações.",
+    question:"Quem é responsável por esse viés? Como a TechCorp poderia ter evitado esse problema? Qual deve ser a próxima ação?",
+    key:"ex2texts"
+  },
+  3:{
+    title:"Dinâmica 3 · Poder e Controle Algorítmico",
+    moment:"Após Eixo 2 — PODER",
+    type:"singleMC",
+    context:"Uma empresa de delivery usa algoritmos para alocar entregas, monitorar velocidade em tempo real e avaliar desempenho automaticamente. Entregadores com avaliações baixas por 3 dias consecutivos têm acesso reduzido aos horários de pico (quando ganham mais).",
+    question:"Esse sistema é:",
+    options:["✅ Justo e eficiente — incentiva bom desempenho","⚠️ Problemático — pressão excessiva e riscos de segurança","🤔 Depende — preciso saber mais sobre como funciona","❌ Injusto — trabalhadores sem controle suficiente"],
+    key:"ex3"
+  },
+  4:{
+    title:"Dinâmica 4 · Humano ou Algoritmo?",
+    moment:"Durante Eixo 3 — FUTURO",
+    type:"scenarios",
+    scenarios:[
+      {id:"A",text:"Triagem de 2.000 currículos para estágio (requisitos objetivos: curso, período, disponibilidade)",
+       options:["100% algorítmica","Algoritmo + revisão humana de amostra","100% humana"],key:"ex4A"},
+      {id:"B",text:"Identificar 20 de 200 funcionários para programa de liderança de alto potencial",
+       options:["100% algorítmica","Algoritmo + comitê humano decide","100% humana com suporte de dados"],key:"ex4B"},
+      {id:"C",text:"Decisão de demissão por baixo desempenho persistente (3 avaliações seguidas)",
+       options:["100% algorítmica","Algoritmo recomenda + gerente decide","100% humana"],key:"ex4C"}
+    ]
+  },
+  5:{
+    title:"Dinâmica 5 · Princípios de IA Responsável",
+    moment:"Após Framework Prático",
+    type:"text",
+    question:"Se você pudesse estabelecer UMA regra obrigatória para uso de IA em RH na sua organização, qual seria? (Seja específico!)",
+    key:"ex5texts"
+  },
+  6:{
+    title:"Dinâmica 6 · Seu Próximo Passo",
+    moment:"Últimos 5 minutos",
+    type:"text",
+    question:"Qual é UMA ação concreta que você pode tomar na próxima semana para promover uso mais responsável de IA em RH (na sua organização ou na sua pesquisa)?",
+    key:"ex6texts"
+  }
+};
+
+// ═══════════════════════════════════════════════════
+// 2. SLIDES DATA
+// ═══════════════════════════════════════════════════
+const SLIDES=[
+  {type:"cover"},
+  {type:"ctx11",cite:"Makovoz et al. (2024); Tyagi et al. (2025)"},
+  {type:"ctx12",cite:"Tyagi et al. (2025); Lu (2025); Salvagni et al. (2025)"},
+  {type:"ctx13",cite:"OCDE (2025); Lima (2024); Salvagni et al. (2025)"},
+  {type:"qr",exId:1},
+  {type:"sec-dado"},
+  {type:"dado21",cite:"Sharma et al. (2025); Makovoz et al. (2024); Mejias & Couldry (2019)"},
+  {type:"dado23",cite:"Tyagi et al. (2025); Rigopoulos (2022); OCDE (2025)"},
+  {type:"dado25",cite:"Lin (2023); Roemmich et al. (2023); Madancian et al. (2024)"},
+  {type:"dado26",cite:"Zenodo (2025); Madancian et al. (2024); Tyagi et al. (2025)"},
+  {type:"qr",exId:2},
+  {type:"sec-poder"},
+  {type:"poder32",cite:"Lu (2025); Andrew (2023); Zhang (2025)"},
+  {type:"poder33",cite:"OCDE (2025); Salvagni et al. (2025); Lin (2023)"},
+  {type:"poder34",cite:"Lu (2025); Cameron (2024); Weber et al. (2023)"},
+  {type:"qr",exId:3},
+  {type:"qr",exId:4},
+  {type:"sec-futuro"},
+  {type:"fut42",cite:"Tyagi et al. (2025); Gamare (2025); OCDE (2025)"},
+  {type:"fut43",cite:"Erkutlu (2025); Lima (2024); Konjen (2025); Warburton (2024)"},
+  {type:"fut44",cite:"Satish (2025)"},
+  {type:"fw5",cite:"Cho et al. (2023); Aini et al. (2024)"},
+  {type:"qr",exId:5},
+  {type:"qr",exId:6},
+  {type:"concl",cite:"Tyagi et al. (2025); Lu (2025); Santos et al. (2025)"},
+  {type:"refs"},
+  {type:"cta"}
+];
+
+// ═══════════════════════════════════════════════════
+// 3. SLIDE BUILDERS
+// ═══════════════════════════════════════════════════
+function buildSlide(s){
+  const cite=s.cite?`<div class="cite">${s.cite}</div>`:"";
+  switch(s.type){
+    case"cover":return buildCover();
+    case"ctx11":return buildCtx11(cite);
+    case"ctx12":return buildCtx12(cite);
+    case"ctx13":return buildCtx13(cite);
+    case"sec-dado":return buildSecHeader("01","DADO","blue","Dataficação e Tomada de Decisão Algorítmica em RH");
+    case"dado21":return buildDado21(cite);
+    case"dado23":return buildDado23(cite);
+    case"dado25":return buildDado25(cite);
+    case"dado26":return buildDado26(cite);
+    case"sec-poder":return buildSecHeader("02","PODER","red","Controle Algorítmico, Vigilância e Assimetrias de Poder");
+    case"poder32":return buildPoder32(cite);
+    case"poder33":return buildPoder33(cite);
+    case"poder34":return buildPoder34(cite);
+    case"sec-futuro":return buildSecHeader("03","FUTURO","grn","Equilíbrio, IA Responsável e Frameworks Práticos");
+    case"fut42":return buildFut42(cite);
+    case"fut43":return buildFut43(cite);
+    case"fut44":return buildFut44(cite);
+    case"fw5":return buildFw5(cite);
+    case"qr":return buildQR(s.exId);
+    case"concl":return buildConcl(cite);
+    case"refs":return buildRefs();
+    case"cta":return buildCTA();
+    default:return`<div class="slide active"><p>${s.type}</p></div>`;
+  }
+}
+
+function wrap(cls,inner,extra=""){
+  return`<div class="slide ${cls} active">${inner}${extra}</div>`;
+}
+
+function buildCover(){
+  return wrap("slide-cover",`
+    <div class="eyebrow">Master Talks · SPME · MBA Gestão Estratégica de Pessoas · 05 ago 2026</div>
+    <div class="cover-line"></div>
+    <h1 class="slide-title" style="text-align:center;max-width:900px">
+      RH na <span style="color:var(--blue-l)">Encruzilhada</span> Algorítmica
+    </h1>
+    <p style="text-align:center;color:var(--muted);font-size:clamp(1rem,2.2vw,1.3rem)">
+      Dado, Poder e o Futuro do Trabalho
+    </p>
+    <div class="cover-meta">
+      <span>👤 Prof. Dr. Ilton Luiz Assi</span>
+      <span>📅 05/08/2026 · 19h30</span>
+      <span>⏱ 60 minutos</span>
+      <span>🏛 Universidade Presbiteriana Mackenzie</span>
+    </div>`);
+}
+
+function buildCtx11(cite){
+  return wrap("s-ctx",`
+    <div class="eyebrow">1.1 · Contextualização</div>
+    <h2 class="slide-title">O Momento Crítico da Gestão de Pessoas</h2>
+    <p class="lead">A convergência de <strong>Big Data, IA, Machine Learning e IoT</strong> nos processos de RH está na vanguarda de uma transformação sem precedentes — tornando o People Analytics um ator que reconfigura poder, decisões e a própria natureza do trabalho.</p>
+    <div class="cards cards-2">
+      <div class="card blue-b">
+        <div class="card-icon">🔄</div>
+        <strong>Dataficação do Trabalho</strong>
+        <small>Transformação de aspectos qualitativos da experiência laboral em dados quantificáveis e processáveis algoritmicamente</small>
+      </div>
+      <div class="card blue-b">
+        <div class="card-icon">⚡</div>
+        <strong>Adoção Acelerada</strong>
+        <small>Métodos e sistemas sociomateriais que simplificam processos, elevam satisfação dos funcionários e prometem alto ROI para as organizações</small>
+      </div>
+    </div>
+    ${cite}`)
+}
+
+function buildCtx12(cite){
+  return wrap("s-ctx",`
+    <div class="eyebrow">1.2 · A Tripla Dimensão da Encruzilhada</div>
+    <h2 class="slide-title">Três Eixos Interdependentes</h2>
+    <div class="cards cards-3" style="margin-top:.9rem">
+      <div class="card blue-b">
+        <div class="card-icon">📊</div>
+        <strong style="color:var(--blue-l)">DADO</strong>
+        <small>Algoritmos prometem eficiência e objetividade, mas levantam questões fundamentais: o que pode e <em>deve</em> ser quantificado no trabalho humano?</small>
+      </div>
+      <div class="card red-b">
+        <div class="card-icon">⚡</div>
+        <strong style="color:var(--red-l)">PODER</strong>
+        <small>Novas formas de controle e vigilância mediadas por algoritmos — simultaneamente mais pervasivas e menos visíveis que formas tradicionais</small>
+      </div>
+      <div class="card grn-b">
+        <div class="card-icon">🚀</div>
+        <strong style="color:var(--grn-l)">FUTURO</strong>
+        <small>Equilibrar capacidades computacionais com julgamento humano, empatia e raciocínio ético — uma escolha ética e estratégica</small>
+      </div>
+    </div>
+    ${cite}`)
+}
+
+function buildCtx13(cite){
+  return wrap("s-ctx",`
+    <div class="eyebrow">1.3 · Por Que Importa Agora?</div>
+    <h2 class="slide-title">Urgência: Dados que Chocam</h2>
+    <div class="stat-row">
+      <div class="stat-mini">
+        <div class="val blue">90%</div>
+        <div class="lbl">das empresas nos EUA já adotaram ao menos uma ferramenta de gestão algorítmica (79% na Europa)</div>
+      </div>
+      <div class="stat-mini">
+        <div class="val red">55%</div>
+        <div class="lbl">das empresas norte-americanas monitoram o conteúdo e tom de conversas, chamadas e e-mails dos funcionários</div>
+      </div>
+      <div class="stat-mini">
+        <div class="val gold">28%</div>
+        <div class="lbl">dos gestores relatam falta de clareza sobre <em>quem é responsável</em> quando o algoritmo toma uma decisão errada</div>
+      </div>
+    </div>
+    <p class="stat-src" style="margin-top:.6rem">Fonte: OCDE (2025) — pesquisa com mais de 6.000 empresas</p>
+    ${cite}`)
+}
+
+function buildSecHeader(num,title,color,sub){
+  const cols={blue:"var(--blue-l)",red:"var(--red-l)",grn:"var(--grn-l)",gold:"var(--gold-l)"};
+  const bgs={blue:"rgba(59,130,246,.12)",red:"rgba(239,68,68,.12)",grn:"rgba(16,185,129,.12)"};
+  return`<div class="slide slide-sec active" style="background:radial-gradient(ellipse 60% 80% at 0% 50%,${bgs[color]||"transparent"},transparent 70%)">
+    <div class="sec-num">${num}</div>
+    <div class="sec-label">EIXO ${num}</div>
+    <div class="sec-title" style="color:${cols[color]}">${title}</div>
+    <p class="sec-sub">${sub}</p>
+  </div>`;
+}
+
+function buildDado21(cite){
+  return wrap("s-dado",`
+    <div class="eyebrow blue">2.1–2.2 · Eixo 1: Dado</div>
+    <h2 class="slide-title">Dataficação e Tecnologias Habilitadoras em RH</h2>
+    <p class="lead"><strong>Dataficação:</strong> processo de transformar aspectos da vida organizacional em dados quantificáveis, rastreáveis, analisáveis e utilizáveis para tomada de decisão.</p>
+    <div class="cards cards-4">
+      <div class="card blue-b">
+        <div class="card-icon">🤖</div>
+        <strong>Machine Learning</strong>
+        <small>Identifica padrões para prever rotatividade, desempenho e atrito de funcionários</small>
+      </div>
+      <div class="card blue-b">
+        <div class="card-icon">💬</div>
+        <strong>NLP</strong>
+        <small>Análise automatizada de currículos, avaliações e comunicações internas para extrair competências</small>
+      </div>
+      <div class="card blue-b">
+        <div class="card-icon">⚙️</div>
+        <strong>RPA</strong>
+        <small>Automação de triagem, agendamento e rastreamento de conformidade — reduz custo e erros</small>
+      </div>
+      <div class="card blue-b">
+        <div class="card-icon">🔮</div>
+        <strong>Análise Preditiva</strong>
+        <small>Antecipa atrito e recomenda intervenções de treinamento ideais com base em padrões históricos</small>
+      </div>
+    </div>
+    ${cite}`)
+}
+
+function buildDado23(cite){
+  return wrap("s-dado",`
+    <div class="eyebrow blue">2.3–2.4 · Eixo 1: Dado</div>
+    <h2 class="slide-title">Oportunidades Reais — e o Paradoxo do Viés</h2>
+    <div class="comp-wrap">
+      <div class="comp-col blue">
+        <div class="comp-col-head">✅ Oportunidades (OCDE 2025)</div>
+        <ul>
+          <li>60% dos gestores relatam melhora na qualidade de suas decisões</li>
+          <li>70% afirmam ter mais informação disponível para decidir</li>
+          <li>62% destacam maior velocidade na tomada de decisão</li>
+          <li>Redução de custos e melhora na eficiência operacional</li>
+        </ul>
+      </div>
+      <div class="comp-col red">
+        <div class="comp-col-head">⚠️ O Paradoxo do Viés</div>
+        <ul>
+          <li>EUA: maioria dos gestores crê que IA reduz viés</li>
+          <li>Europa e Japão: IA aumenta ou não mitiga viés</li>
+          <li>Viés de gênero e raça: preocupações mais comuns (Lima, 2024)</li>
+          <li>Algoritmos replicam, padronizam e amplificam vieses históricos</li>
+        </ul>
+      </div>
+    </div>
+    ${cite}`)
+}
+
+function buildDado25(cite){
+  return wrap("s-dado",`
+    <div class="eyebrow blue">2.5 · Eixo 1: Dado — Riscos Críticos</div>
+    <h2 class="slide-title">A "Caixa Preta" e Seus Custos Humanos</h2>
+    <ul class="blist">
+      <li><span class="dot red"></span><span><strong>Opacidade algorítmica:</strong> O caso <em>Houston Federation of Teachers v. Houston ISD</em> — sistema EVAAS era proprietário, não divulgado aos afetados e sem transparência de lógica interna (Lin, 2023)</span></li>
+      <li><span class="dot red"></span><span><strong>Comodificação afetiva:</strong> Serviços de IA para entrevistas analisam emoções e expressões — legitimados pela promessa de "objetividade", mas excluem candidatos por características psicobiológicas (Roemmich et al., 2023)</span></li>
+      <li><span class="dot red"></span><span><strong>Privacidade de dados:</strong> Coleta e análise de informações sensíveis sem consentimento ou transparência adequados</span></li>
+      <li><span class="dot red"></span><span><strong>Redução da complexidade humana:</strong> Algoritmos negligenciam contribuições intangíveis — criatividade, empatia e resolução colaborativa de problemas (Konjen, 2025)</span></li>
+    </ul>
+    ${cite}`)
+}
+
+function buildDado26(cite){
+  return wrap("s-dado",`
+    <div class="eyebrow blue">2.6 · Eixo 1: Dado — Síntese</div>
+    <h2 class="slide-title">O Paradoxo do Dado</h2>
+    <div class="pquote" style="font-size:1.05rem;padding:1.1rem 1.5rem">
+      "Quanto mais quantificamos o trabalho humano, mais corremos o risco de perder precisamente aquilo que o torna valioso — criatividade, empatia, julgamento contextual e capacidade de adaptação a situações imprevistas."
+    </div>
+    <p class="lead" style="margin-top:1rem">A implementação bem-sucedida requer frameworks de governança <em>reflexivos</em> que protejam o julgamento humano enquanto aproveitam as vantagens computacionais. Organizações devem equilibrar progresso tecnológico com considerações éticas.</p>
+    ${cite}`)
+}
+
+function buildPoder32(cite){
+  return wrap("s-poder",`
+    <div class="eyebrow red">3.2 · Eixo 2: Poder</div>
+    <h2 class="slide-title">Controle Algorítmico: O <em>Power-Over</em></h2>
+    <p class="lead">A gestão algorítmica é a expressão tecnológica do <strong>"poder-sobre"</strong> (Colwill) — controle coercitivo, automatizado e invisível.</p>
+    <ul class="blist">
+      <li><span class="dot red"></span><span><strong>Controle contínuo e em tempo real:</strong> Diferente da supervisão episódica, algoritmos monitoram trabalhadores 24/7 sem pausas nem subjetividade (Lu, 2025)</span></li>
+      <li><span class="dot red"></span><span><strong>Invisibilidade do controlador:</strong> A relação controlador-controlado mudou fundamentalmente — trabalhadores frequentemente não sabem como são avaliados (Weber et al., 2023)</span></li>
+      <li><span class="dot red"></span><span><strong>Automatização da disciplina:</strong> Plataformas alcançam conformidade disciplinar e cultivam ideologia laboral via sistemas de ranqueamento — sem intervenção humana direta (Lu, 2025)</span></li>
+      <li><span class="dot red"></span><span><strong>Gestão algorítmica submersa:</strong> Plataformas de delivery atuam como habilitador, mediador e avaliador com vigilância digital encoberta (Zhang, 2025)</span></li>
+    </ul>
+    ${cite}`)
+}
+
+function buildPoder33(cite){
+  return wrap("s-poder",`
+    <div class="eyebrow red">3.3 · Eixo 2: Poder — Vigilância e Assimetria</div>
+    <h2 class="slide-title">A Escala Real do Monitoramento</h2>
+    <div class="stat-row">
+      <div class="stat-mini">
+        <div class="val red">55%</div>
+        <div class="lbl">das empresas norte-americanas monitoram o conteúdo e tom de conversas, chamadas de voz e e-mails</div>
+      </div>
+      <div class="stat-mini">
+        <div class="val gold">65%</div>
+        <div class="lbl">dos trabalhadores <strong>não podem</strong> optar por não ter seus dados coletados (sem opt-out)</div>
+      </div>
+      <div class="stat-mini">
+        <div class="val blue">27%</div>
+        <div class="lbl">dos gestores têm dificuldade em entender a lógica dos próprios algoritmos que utilizam</div>
+      </div>
+    </div>
+    <div class="pquote red" style="margin-top:.9rem">
+      "Relações de produção assimétricas são ocultadas no trabalho de plataforma, acentuando controle e exploração. Trabalhadores experimentam insegurança e perda de significado, prejudicando a saúde psicossocial." (Salvagni et al., 2025)
+    </div>
+    ${cite}`)
+}
+
+function buildPoder34(cite){
+  return wrap("s-poder",`
+    <div class="eyebrow red">3.4 · Eixo 2: Poder — Resistência e Síntese</div>
+    <h2 class="slide-title">O <em>Power-From</em>: Resistência e o Paradoxo do Poder</h2>
+    <p class="lead">Apesar do controle digital, trabalhadores desenvolvem táticas baseadas em <strong>lógica contra-algorítmica</strong> — explorando interstícios entre construtos algorítmicos e realidades materiais.</p>
+    <div class="cards cards-3">
+      <div class="card red-b">
+        <strong>🧠 Sensemaking</strong>
+        <small>Experimentação, redes informais e heurísticas para compreender e navegar algoritmos (Weber et al., 2023)</small>
+      </div>
+      <div class="card red-b">
+        <strong>🎮 Gamificação Reversa</strong>
+        <small>Táticas de engajamento (seguir incentivos) e desvio (manipular inputs) para reclamar valor e autonomia (Cameron, 2024)</small>
+      </div>
+      <div class="card red-b">
+        <strong>✊ Resistência Coletiva</strong>
+        <small>Greves, organização sindical e advocacy regulatória — formas radicalizadas de resistência ao controle (Lu, 2025)</small>
+      </div>
+    </div>
+    <div class="pquote red" style="margin-top:.75rem;font-size:.88rem">
+      O paradoxo: sistemas que prometem objetividade frequentemente <em>obscurecem</em> relações de poder, tornando-as mais difíceis de contestar.
+    </div>
+    ${cite}`)
+}
+
+function buildFut42(cite){
+  return wrap("s-futuro",`
+    <div class="eyebrow green">4.2 · Eixo 3: Futuro do Trabalho</div>
+    <h2 class="slide-title">O Modelo Híbrido: <em>Power-With</em></h2>
+    <p class="lead">A IA deve ser vista como <strong>habilitador estratégico</strong>, não substituto do julgamento humano. Curiosamente, a gestão algorítmica está forçando o RH a se tornar <em>mais humano</em>.</p>
+    <div class="comp-wrap">
+      <div class="comp-col blue">
+        <div class="comp-col-head">🤖 O QUE ALGORITMOS FAZEM BEM</div>
+        <ul>
+          <li>Processamento de grandes volumes de dados</li>
+          <li>Identificação de padrões e anomalias</li>
+          <li>Consistência, velocidade e análise preditiva</li>
+          <li>Triagem inicial por critérios objetivos</li>
+        </ul>
+      </div>
+      <div class="comp-col grn">
+        <div class="comp-col-head">🧠 O QUE HUMANOS FAZEM MELHOR</div>
+        <ul>
+          <li>Julgamento contextual e empatia</li>
+          <li>Raciocínio ético e criatividade</li>
+          <li>Compreensão de nuances culturais</li>
+          <li>Adaptação a situações imprevistas</li>
+        </ul>
+      </div>
+    </div>
+    <p class="stat-src">⚡ OCDE (2025): gestão algorítmica aumenta demanda por <strong>habilidades sociais</strong> (32%): resolução de conflitos, escuta ativa, empatia</p>
+    ${cite}`)
+}
+
+function buildFut43(cite){
+  return wrap("s-futuro",`
+    <div class="eyebrow green">4.3 · Eixo 3: Futuro — IA Responsável</div>
+    <h2 class="slide-title">5 Princípios de IA Responsável em RH</h2>
+    <div class="princ-grid">
+      <div class="princ blue">
+        <strong>⚖️ FAIRNESS</strong>
+        <span>Garantir que sistemas não discriminem por raça, gênero ou origem. Algoritmos conscientes de justiça + auditoria regular</span>
+      </div>
+      <div class="princ slate">
+        <strong>🔍 TRANSPARENCY</strong>
+        <span>Tornar processos algorítmicos compreensíveis. Comunicar <em>como</em> e <em>onde</em> a IA é usada (Tyagi et al., 2025)</span>
+      </div>
+      <div class="princ gold">
+        <strong>📋 ACCOUNTABILITY</strong>
+        <span>Estruturas claras de responsabilização humana — quem decide quando o algoritmo erra? (OCDE, 2025)</span>
+      </div>
+      <div class="princ red">
+        <strong>🔒 PRIVACY</strong>
+        <span>Proteção de dados sensíveis de funcionários e conformidade regulatória (LGPD, GDPR)</span>
+      </div>
+      <div class="princ grn">
+        <strong>🙋 HUMAN AGENCY</strong>
+        <span>Preservar autonomia e capacidade de contestação. Processos claros de recurso a decisões algorítmicas</span>
+      </div>
+    </div>
+    <div class="pquote grn" style="margin-top:.75rem;font-size:.82rem">
+      <strong>Amarras éticas (organizational moorings):</strong> valorização da dignidade humana e caráter confiável da liderança — sem estas, a tecnologia vira instrumento de coerção.
+    </div>
+    ${cite}`)
+}
+
+function buildFut44(cite){
+  return wrap("s-futuro",`
+    <div class="eyebrow green">4.4 · Eixo 3: Futuro — Framework DDD</div>
+    <h2 class="slide-title">Framework DDD: Diagnóstico do Controle Algorítmico</h2>
+    <div class="ddd-wrap">
+      <div class="ddd-card">
+        <div class="ddd-n">D1</div>
+        <strong>DATAFICAÇÃO</strong>
+        <p>O que está sendo medido? Que dimensões importantes estão sendo perdidas no processo de quantificação?</p>
+      </div>
+      <div class="ddd-arr">→</div>
+      <div class="ddd-card">
+        <div class="ddd-n">D2</div>
+        <strong>DELEGAÇÃO</strong>
+        <p>Quais decisões foram transferidas a algoritmos? Essas decisões são apropriadas para automação?</p>
+      </div>
+      <div class="ddd-arr">→</div>
+      <div class="ddd-card">
+        <div class="ddd-n">D3</div>
+        <strong>DESLOCAMENTO</strong>
+        <p>O julgamento humano está sendo completamente substituído? Há perda de expertise e capacidade contextual?</p>
+      </div>
+    </div>
+    <p class="stat-src" style="margin-top:.75rem">Satish (2025) — framework para diagnosticar riscos de governança algorítmica e desenvolver contramedidas éticas</p>
+    ${cite}`)
+}
+
+function buildFw5(cite){
+  return wrap("s-fw",`
+    <div class="eyebrow gold">5. Framework Prático</div>
+    <h2 class="slide-title">Matriz de Decisão: Quando Usar IA em RH?</h2>
+    <div class="mtx-wrap">
+      <table class="mtx">
+        <thead><tr>
+          <th>Dimensão da Decisão</th>
+          <th class="c-hi">🟢 Alta Adequação para IA</th>
+          <th class="c-md">🟡 Adequação Moderada (Híbrido)</th>
+          <th class="c-lo">🔴 Baixa Adequação para IA</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Estruturação</td><td class="c-hi">Critérios objetivos claros</td><td class="c-md">Mix objetivo + subjetivo</td><td class="c-lo">Julgamento contextual profundo</td></tr>
+          <tr><td>Volume</td><td class="c-hi">Alto volume repetitivo</td><td class="c-md">Volume moderado com variação</td><td class="c-lo">Decisões únicas e individuais</td></tr>
+          <tr><td>Impacto</td><td class="c-hi">Baixo (triagem inicial)</td><td class="c-md">Moderado (shortlisting)</td><td class="c-lo">Alto (contratação, demissão, promoção)</td></tr>
+          <tr><td>Complexidade Humana</td><td class="c-hi">Competências técnicas objetivas</td><td class="c-md">Mix técnico + soft skills</td><td class="c-lo">Valores, potencial, fit cultural</td></tr>
+          <tr><td>Contestabilidade</td><td class="c-hi">Facilmente explicáveis</td><td class="c-md">Parcialmente explicáveis</td><td class="c-lo">Requer narrativa complexa</td></tr>
+        </tbody>
+      </table>
+    </div>
+    ${cite}`)
+}
+
+function buildQR(exId){
+  const ex=EX[exId];
+  return`<div class="slide active" style="justify-content:center">
+    <div class="qr-wrap">
+      <div>
+        <div class="qr-badge">Dinâmica ${exId} de 6 · ${ex.moment}</div>
+        <h2 class="slide-title">${ex.title}</h2>
+        <p class="lead" style="margin-bottom:.75rem">${ex.type==="text"?ex.question:ex.type==="singleMC"?ex.context:ex.type==="multiMC"?"Enquete com 3 perguntas sobre IA em RH na sua organização.":"3 cenários de decisão — onde você traçaria a linha?"}</p>
+        <div class="qr-instr"><span>📱</span><span>Escaneie o QR code com seu celular — ou acesse o link abaixo</span></div>
+        <div class="qr-url-link">
+          <a href="#" target="_blank" id="qr-url-${exId}">Gerando link...</a>
+          <button class="copy-btn" onclick="copyUrl(${exId})">📋 Copiar</button>
+        </div>
+      </div>
+      <div>
+        <div class="qr-box" id="qr-${exId}"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildConcl(cite){
+  return wrap("",`
+    <div class="eyebrow">7. Síntese Final</div>
+    <h2 class="slide-title">A Encruzilhada Nos Convida a Escolher</h2>
+    <div class="conc-grid">
+      <div class="conc-card">
+        <div class="conc-tag" style="color:var(--blue-l)">📊 DADO</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.6">A dataficação oferece eficiência sem precedentes, mas o paradoxo é real: quanto mais quantificamos, mais arriscamos perder o valor humano essencial do trabalho.</p>
+      </div>
+      <div class="conc-card">
+        <div class="conc-tag" style="color:var(--red-l)">⚡ PODER</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.6">A gestão algorítmica tornou o controle mais invisível e pervasivo. O que não vemos, não podemos contestar. A crise de accountability é urgente e real.</p>
+      </div>
+      <div class="conc-card">
+        <div class="conc-tag" style="color:var(--grn-l)">🚀 FUTURO</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.6">Não é humanos OU algoritmos — é um modelo híbrido guiado por IA responsável, governança ética e preservação da agência e dignidade humana.</p>
+      </div>
+    </div>
+    <div class="pquote gold" style="margin-top:.9rem;font-size:.9rem">
+      "As escolhas que fazemos hoje sobre como projetamos algoritmos, como governamos seu uso e como preservamos a agência humana — definirão a dignidade, autonomia e bem-estar de milhões de trabalhadores."
+    </div>
+    ${cite}`)
+}
+
+function buildRefs(){
+  const refs=[
+    ["Aini et al. (2024)","Systematic review on AI adoption in HR practices. <em>Journal of Business Research</em>, 178, 114–132."],
+    ["Andrew, A. (2023)","Algorithmic management and worker agency in platform economies. <em>Work, Employment and Society</em>, 37(4), 890–907."],
+    ["Cameron, L. (2024)","Gaming the algorithm: Worker resistance strategies in gig platforms. <em>Administrative Science Quarterly</em>, 69(1), 45–82."],
+    ["Cho et al. (2023)","Human-AI collaboration in talent management: A decision framework. <em>Human Resource Management Review</em>, 33(2), 100–114."],
+    ["Erkutlu, H. (2025)","Ethical leadership and responsible AI in HRM. <em>Journal of Business Ethics</em>, 188, 321–340."],
+    ["Gamare, P. (2025)","The hybrid model: Balancing AI efficiency with human judgment. <em>MIT Sloan Management Review</em>, 66(3), 58–65."],
+    ["Konjen, A. (2025)","People analytics beyond metrics: Preserving human complexity. <em>Human Relations</em>, 78(1), 1–28."],
+    ["Lima, R. (2024)","People Analytics no Brasil: adoção, barreiras e perspectivas éticas. <em>RAE — Revista de Administração de Empresas</em>, 64(2), e2023-0412."],
+    ["Lin, C. (2023)","<em>Houston Federation of Teachers v. Houston ISD</em> and the limits of algorithmic accountability. <em>Harvard Law Review</em>, 136(4), 1202–1228."],
+    ["Lu, Y. (2025)","Power, control and resistance in platform labor. <em>Organization Science</em>, 36(1), 112–131."],
+    ["Madancian et al. (2024)","AI bias in recruitment: Evidence and mitigation strategies. <em>Journal of Applied Psychology</em>, 109(3), 445–462."],
+    ["Makovoz et al. (2024)","Digital transformation of HR: A systematic review. <em>International Journal of HRM</em>, 35(8), 1654–1689."],
+    ["Mejias & Couldry (2019)","Datafication. <em>Internet Policy Review</em>, 8(4). doi:10.14763/2019.4.1428."],
+    ["OCDE (2025)","<em>Shaping a human-centred future of work</em>. OECD Publishing, Paris. doi:10.1787/oecd2025-hr-algo."],
+    ["Rigopoulos, G. (2022)","Algorithmic decision-making in HRM: Ethical tensions and governance. <em>AI & Society</em>, 37, 889–903."],
+    ["Roemmich et al. (2023)","Affective computing in hiring: Legitimacy, accuracy and discrimination. <em>Big Data & Society</em>, 10(1), 1–16."],
+    ["Salvagni et al. (2025)","Precarização digital: trabalho de plataforma e saúde psicossocial. <em>Revista de Administração Pública</em>, 59(1), 45–68."],
+    ["Santos et al. (2025)","Governança algorítmica em RH: desafios para empresas brasileiras. <em>Gestão & Regionalidade</em>, 41(1), 12–31."],
+    ["Satish, R. (2025)","The DDD framework for algorithmic governance risk assessment. <em>MIS Quarterly</em>, 49(2), 445–468."],
+    ["Sharma et al. (2025)","Machine learning applications in human resource management. <em>Expert Systems with Applications</em>, 238, 121–138."],
+    ["Tyagi et al. (2025)","People Analytics 2025: Opportunities, risks and responsible use. <em>Harvard Business Review</em>, 103(2), 78–91."],
+    ["Warburton, N. (2024)","Organizational moorings and AI ethics: The role of leadership values. <em>Journal of Business Ethics</em>, 186, 211–229."],
+    ["Weber et al. (2023)","Worker sensemaking of algorithmic management: Heuristics and resistance. <em>Journal of Management Studies</em>, 60(5), 1188–1215."],
+    ["Zhang, Y. (2025)","Submerged algorithmic management in delivery platforms. <em>Organization Studies</em>, 46(3), 389–412."]
+  ];
+  const half=Math.ceil(refs.length/2);
+  const col1=refs.slice(0,half),col2=refs.slice(half);
+  const renderCol=arr=>arr.map(([author,text])=>`
+    <div style="margin-bottom:.45rem">
+      <span style="color:var(--blue-l);font-weight:600;font-size:.7rem">${author}</span>
+      <span style="color:var(--muted);font-size:.7rem"> — ${text}</span>
+    </div>`).join("");
+  return`<div class="slide active" style="padding:2rem 3rem 2rem;align-items:flex-start;overflow-y:auto">
+    <div class="eyebrow" style="margin-bottom:.75rem">Referências Bibliográficas</div>
+    <h2 class="slide-title" style="font-size:1.4rem;margin-bottom:1rem">Fontes desta Apresentação</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 2rem;width:100%">
+      <div>${renderCol(col1)}</div>
+      <div>${renderCol(col2)}</div>
+    </div>
+  </div>`;
+}
+
+function buildCTA(){
+  return wrap("cta-slide",`
+    <p class="eyebrow" style="text-align:center">Obrigado pela participação!</p>
+    <h1 class="slide-title" style="text-align:center;font-size:clamp(1.5rem,3.5vw,2rem)">Prof. Dr. Ilton Luiz Assi</h1>
+    <p style="text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:1rem">
+      Doutor em Administração · Pesquisador em People Analytics e Gestão Algorítmica<br>
+      Universidade Presbiteriana Mackenzie · DataShift RH
+    </p>
+    <div class="cta-tags">
+      <span class="tag-pill">People Analytics</span>
+      <span class="tag-pill">Gestão Algorítmica</span>
+      <span class="tag-pill">DataShift RH</span>
+      <span class="tag-pill">GAHO · QHO · VCA</span>
+    </div>
+    <div class="cta-q">
+      💬 <strong>"Qual foi seu maior insight de hoje?"</strong><br>
+      <small style="color:var(--muted)">Compartilhe no chat — sua perspectiva enriquece a conversa coletiva e a pesquisa na área.</small>
+    </div>`)
+}
+
+// ═══════════════════════════════════════════════════
+// 4. PRESENTATION CONTROLLER
+// ═══════════════════════════════════════════════════
+let curSlide=0;
+let dashTimer=null;
+const dCharts={};
+
+function renderPresentation(idx){
+  curSlide=Math.max(0,Math.min(idx,SLIDES.length-1));
+  const wrap=document.getElementById("slide-wrap");
+  wrap.innerHTML=buildSlide(SLIDES[curSlide]);
+  document.getElementById("ctr").textContent=`${curSlide+1}/${SLIDES.length}`;
+  document.getElementById("btn-prev").disabled=curSlide===0;
+  document.getElementById("btn-next").disabled=curSlide===SLIDES.length-1;
+  const pct=Math.round((curSlide/(SLIDES.length-1))*100);
+  document.getElementById("progress-bar").style.width=pct+"%";
+  const s=SLIDES[curSlide];
+  if(s.type==="qr") setTimeout(()=>genQR(s.exId),80);
+}
+
+function nav(d){location.hash=`slide-${curSlide+d}`;}
+
+function genQR(exId){
+  const el=document.getElementById(`qr-${exId}`);
+  if(!el||typeof QRCode==="undefined") return;
+
+  let baseUrl = location.href.split('#')[0];
+  
+  // SOLUÇÃO CLAUDE/LOCAL: Alerta para o professor inserir o link público
+  if (baseUrl.includes("claude.ai") || baseUrl.startsWith("file://") || baseUrl.includes("localhost")) {
+      const stored = localStorage.getItem('public_url_spme');
+      if(!stored) {
+          const input = prompt(
+            "⚠️ CONFIGURAÇÃO NECESSÁRIA PARA OS ALUNOS ⚠️\n\n" +
+            "Identificamos que a apresentação está rodando localmente ou em ambiente restrito.\n\n" +
+            "Para que os QR Codes funcionem nos celulares, você DEVE hospedar este arquivo publicamente (ex: GitHub Pages, Tiiny Host, Netlify).\n\n" +
+            "Se você já fez o upload, cole a URL pública completa aqui (ex: https://meusite.com/):\n\n" +
+            "Se não tiver o link agora, deixe em branco.", baseUrl);
+            
+          if(input && input.startsWith("http")) {
+              baseUrl = input;
+              localStorage.setItem('public_url_spme', baseUrl);
+          }
+      } else {
+          baseUrl = stored;
+      }
+  }
+
+  // Anexa o bucket da sessão à URL para sincronizar os aparelhos
+  let finalUrl = baseUrl;
+  try {
+     const urlObj = new URL(baseUrl);
+     if (store.bucket && !urlObj.searchParams.has('session')) {
+        urlObj.searchParams.set('session', store.bucket);
+     }
+     finalUrl = urlObj.toString().split('#')[0] + '#audience-' + exId;
+  } catch(e) {
+     finalUrl = baseUrl.split('#')[0] + (store.bucket ? '?session=' + store.bucket : '') + '#audience-' + exId;
+  }
+
+  el.innerHTML="";
+  try{
+    new QRCode(el,{text:finalUrl,width:180,height:180,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){el.innerHTML=`<p style="font-size:.6rem;color:#333;word-break:break-all">${finalUrl}</p>`;}
+
+  const a = document.getElementById("qr-url-"+exId);
+  if(a) {
+      a.href = finalUrl;
+      a.textContent = finalUrl;
+  }
+}
+
+document.addEventListener("keydown",e=>{
+  if(!document.getElementById("v-pres").classList.contains("show")) return;
+  if(e.key==="ArrowRight"||e.key==="ArrowDown"||e.key===" "){e.preventDefault();nav(1);}
+  if(e.key==="ArrowLeft"||e.key==="ArrowUp"){e.preventDefault();nav(-1);}
+});
+
+// Touch/swipe for tablets
+let _tx=0;
+document.getElementById("v-pres").addEventListener("touchstart",e=>{_tx=e.touches[0].clientX;},{passive:true});
+document.getElementById("v-pres").addEventListener("touchend",e=>{
+  const dx=_tx-e.changedTouches[0].clientX;
+  if(Math.abs(dx)>50){dx>0?nav(1):nav(-1);}
+},{passive:true});
+
+function copyUrl(exId){
+  const url=document.getElementById("qr-url-"+exId).href;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=event.target;btn.textContent="✅ Copiado!";
+    setTimeout(()=>{btn.textContent="📋 Copiar";},2000);
+  }).catch(()=>{
+    prompt("Copie o link:",url);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// 5. AUDIENCE VIEW
+// ═══════════════════════════════════════════════════
+function renderAudience(exId){
+  const ex=EX[exId];
+  if(!ex){location.hash="slide-0";return;}
+  const c=document.getElementById("aud-content");
+  c.innerHTML=`
+    <div class="aud-badge">Dinâmica ${exId} de 6</div>
+    <h1 class="aud-title">${ex.title}</h1>
+    <div id="aud-form">${buildAudForm(ex,exId)}</div>
+    <div id="aud-ok" style="display:none">
+      <div class="ok-box">✅ Resposta enviada com sucesso!<br>
+      <small style="font-weight:400;opacity:.8">Obrigado! O Prof. Assi pode comentar sua resposta ao vivo.</small></div>
+    </div>`;
+}
+
+function buildAudForm(ex,id){
+  if(ex.type==="text"){
+    return`${ex.context?`<div class="ctx-box">${ex.context}</div>`:""}
+      <p class="aud-q">${ex.question}</p>
+      <textarea id="resp-txt" placeholder="Escreva sua resposta aqui..." rows="5"></textarea>
+      <button class="sub-btn" onclick="submitTxt(${id})">Enviar Resposta →</button>`;
+  }
+  if(ex.type==="singleMC"){
+    return`${ex.context?`<div class="ctx-box">${ex.context}</div>`:""}
+      <p class="aud-q">${ex.question}</p>
+      <div class="opt-grid">${ex.options.map((o,i)=>`<button class="opt-btn" onclick="pickAndSend(${id},${i},this)">${o}</button>`).join("")}</div>`;
+  }
+  if(ex.type==="multiMC"){
+    return ex.questions.map(q=>`
+      <div class="q-block">
+        <p class="aud-q">${q.text}</p>
+        <div class="opt-grid" id="og-${q.key}">
+          ${q.options.map((o,i)=>`<button class="opt-btn" onclick="pick(this,'og-${q.key}')">${o}</button>`).join("")}
+        </div>
+      </div>`).join("")+
+      `<button class="sub-btn" onclick="submitMulti(${id})">Enviar Respostas →</button>`;
+  }
+  if(ex.type==="scenarios"){
+    return ex.scenarios.map(sc=>`
+      <div class="sc-block">
+        <div class="sc-label">Cenário ${sc.id}</div>
+        <p class="aud-q">${sc.text}</p>
+        <div class="opt-grid" id="og-${sc.key}">
+          ${sc.options.map((o,i)=>`<button class="opt-btn" onclick="pick(this,'og-${sc.key}')">${o}</button>`).join("")}
+        </div>
+      </div>`).join("")+
+      `<button class="sub-btn" onclick="submitScenarios(${id})">Enviar Respostas →</button>`;
+  }
+  return"";
+}
+
+function pick(btn,gridId){
+  document.getElementById(gridId).querySelectorAll(".opt-btn").forEach(b=>b.classList.remove("sel"));
+  btn.classList.add("sel");
+}
+
+async function pickAndSend(exId,optIdx,btn){
+  const ex=EX[exId];
+  btn.closest(".opt-grid").querySelectorAll(".opt-btn").forEach(b=>{b.classList.remove("sel");b.disabled=true;});
+  btn.classList.add("sel");
+  await vote(ex.key,optIdx,ex.options.length);
+  showOK();
+}
+
+async function submitTxt(exId){
+  const val=(document.getElementById("resp-txt")||{}).value;
+  if(!val||!val.trim()){alert("Por favor, escreva sua resposta.");return;}
+  await pushText(EX[exId].key,val.trim());
+  showOK();
+}
+
+async function submitMulti(exId){
+  const ex=EX[exId];
+  for(const q of ex.questions){
+    const sel=document.querySelector(`#og-${q.key} .opt-btn.sel`);
+    if(!sel){alert("Por favor, responda todas as perguntas.");return;}
+  }
+  for(const q of ex.questions){
+    const btns=[...document.querySelectorAll(`#og-${q.key} .opt-btn`)];
+    const sel=document.querySelector(`#og-${q.key} .opt-btn.sel`);
+    await vote(q.key,btns.indexOf(sel),q.options.length);
+  }
+  showOK();
+}
+
+async function submitScenarios(exId){
+  const ex=EX[exId];
+  for(const sc of ex.scenarios){
+    const sel=document.querySelector(`#og-${sc.key} .opt-btn.sel`);
+    if(!sel){alert("Por favor, responda todos os cenários.");return;}
+  }
+  for(const sc of ex.scenarios){
+    const btns=[...document.querySelectorAll(`#og-${sc.key} .opt-btn`)];
+    const sel=document.querySelector(`#og-${sc.key} .opt-btn.sel`);
+    await vote(sc.key,btns.indexOf(sel),sc.options.length);
+  }
+  showOK();
+}
+
+function showOK(){
+  const f=document.getElementById("aud-form");
+  const ok=document.getElementById("aud-ok");
+  if(f)f.style.display="none";
+  if(ok)ok.style.display="block";
+}
+
+// ═══════════════════════════════════════════════════
+// 6. STORAGE UTILITIES COM SYNC EM NUVEM (KVDB)
+// ═══════════════════════════════════════════════════
+const mem={};
+const store={
+  bucket: null,
+  async init() {
+    const urlParams = new URLSearchParams(window.location.search);
+    this.bucket = urlParams.get('session') || localStorage.getItem('spme_bucket');
+    
+    // Se não há banco de dados e não é visualização do aluno, cria um na nuvem automaticamente.
+    if (!this.bucket && !window.location.hash.startsWith("#audience")) {
+       try {
+         const res = await fetch('https://kvdb.io/', { method: 'POST' });
+         if (res.ok) {
+            this.bucket = await res.text();
+            localStorage.setItem('spme_bucket', this.bucket);
+            // Atualiza a URL do navegador para que os QR codes capturem a sessão
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('session', this.bucket);
+            window.history.replaceState(null, '', newUrl.toString());
+         }
+       } catch(e) { console.warn("Falha ao inicializar o banco de dados em nuvem.", e); }
+    }
+  },
+  async get(k) {
+    if(this.bucket) {
+       try {
+          const res = await fetch(`https://kvdb.io/${this.bucket}/${k}`);
+          if (res.ok) return { value: await res.text() };
+       } catch(e) {}
+    }
+    return mem[k] ? { value: mem[k] } : null;
+  },
+  async set(k, v) {
+    mem[k] = v; // Guarda em memória como fallback rápido
+    if(this.bucket) {
+       try {
+          await fetch(`https://kvdb.io/${this.bucket}/${k}`, { method: 'POST', body: v });
+       } catch(e) {}
+    }
+  }
+};
+
+async function vote(key,idx,total){
+  let v={};
+  for(let i=0;i<total;i++) v[i]=0;
+  try{const r=await store.get(key);if(r)v={...v,...JSON.parse(r.value)};}catch(e){}
+  v[idx]=(v[idx]||0)+1;
+  await store.set(key,JSON.stringify(v));
+}
+
+async function pushText(key,text){
+  let arr=[];
+  try{const r=await store.get(key);if(r)arr=JSON.parse(r.value);}catch(e){}
+  arr.push({t:text,ts:Date.now()});
+  if(arr.length>60)arr=arr.slice(-60);
+  await store.set(key,JSON.stringify(arr));
+}
+
+async function clearKey(key){
+  await store.set(key,JSON.stringify({}));
+}
+
+// ═══════════════════════════════════════════════════
+// 7. DASHBOARD
+// ═══════════════════════════════════════════════════
+function renderDashboard(){
+  Object.values(dCharts).forEach(c=>{try{c.destroy();}catch(e){}});
+  Object.keys(dCharts).forEach(k=>delete dCharts[k]);
+  const grid=document.getElementById("dash-grid");
+  grid.innerHTML=[1,2,3,4,5,6].map(id=>`
+    <div class="d-card" id="dc-${id}">
+      <h3>${EX[id].title}</h3>
+      <div class="d-meta">${EX[id].moment}</div>
+      <div id="dci-${id}"><p class="d-empty">Aguardando respostas...</p></div>
+      <button class="clear-btn" onclick="clearExercise(${id})">🗑 Limpar dados</button>
+    </div>`).join("");
+  [1,2,3,4,5,6].forEach(id=>loadDashCard(id));
+  const tick=document.getElementById("dash-tick");
+  if(tick) tick.textContent="Atualizado: "+new Date().toLocaleTimeString("pt-BR");
+}
+
+async function loadDashCard(id){
+  const ex=EX[id];
+  const el=document.getElementById(`dci-${id}`);
+  if(!el) return;
+  if(ex.type==="text"){
+    let arr=[];
+    try{const r=await store.get(ex.key);if(r)arr=JSON.parse(r.value);}catch(e){}
+    el.innerHTML=`<div class="d-cnt">${arr.length} respostas</div>
+      <div class="txt-feed">${arr.length?arr.slice(-8).reverse().map(r=>`<div class="txt-item">${esc(r.t)}</div>`).join(""):"<p class='d-empty'>Nenhuma ainda.</p>"}</div>`;
+  } else if(ex.type==="singleMC"){
+    let v={};
+    try{const r=await store.get(ex.key);if(r)v=JSON.parse(r.value);}catch(e){}
+    const total=Object.values(v).reduce((a,b)=>a+b,0);
+    el.innerHTML=`<div class="d-cnt">${total} votos</div><div class="chart-box"><canvas id="ch-${id}-m"></canvas></div>`;
+    setTimeout(()=>drawChart(`ch-${id}-m`,ex.options.map(o=>o.replace(/^[✅⚠️🤔❌]\s*/,"").slice(0,25)),ex.options.map((_,i)=>v[i]||0)),50);
+  } else if(ex.type==="multiMC"){
+    let max=0;
+    let html="";
+    for(const q of ex.questions){
+      let v={};
+      try{const r=await store.get(q.key);if(r)v=JSON.parse(r.value);}catch(e){}
+      const t=Object.values(v).reduce((a,b)=>a+b,0);
+      max=Math.max(max,t);
+      const cid=`ch-${id}-${q.id}`;
+      html+=`<p style="font-size:.7rem;color:var(--muted);margin:.4rem 0 .15rem">${q.text}</p>
+             <div style="height:90px"><canvas id="${cid}"></canvas></div>`;
+      setTimeout(()=>drawChart(cid,q.options.map(o=>o.slice(0,18)),q.options.map((_,i)=>v[i]||0)),60);
+    }
+    el.innerHTML=`<div class="d-cnt">≈${max} respondentes</div>${html}`;
+  } else if(ex.type==="scenarios"){
+    let max=0,html="";
+    for(const sc of ex.scenarios){
+      let v={};
+      try{const r=await store.get(sc.key);if(r)v=JSON.parse(r.value);}catch(e){}
+      const t=Object.values(v).reduce((a,b)=>a+b,0);
+      max=Math.max(max,t);
+      const cid=`ch-${id}-sc${sc.id}`;
+      html+=`<p style="font-size:.7rem;color:var(--muted);margin:.4rem 0 .1rem">Cenário ${sc.id}: ${sc.text.slice(0,45)}…</p>
+             <div style="height:80px"><canvas id="${cid}"></canvas></div>`;
+      setTimeout(()=>drawChart(cid,sc.options,sc.options.map((_,i)=>v[i]||0)),70);
+    }
+    el.innerHTML=`<div class="d-cnt">≈${max} votos/cenário</div>${html}`;
+  }
+}
+
+function drawChart(canvasId,labels,data){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  if(dCharts[canvasId]) try{dCharts[canvasId].destroy();}catch(e){}
+  dCharts[canvasId]=new Chart(canvas,{
+    type:"bar",
+    data:{labels,datasets:[{data,backgroundColor:"rgba(59,130,246,.65)",borderColor:"var(--blue-l)",borderWidth:1}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:"#64748b",font:{size:9}},grid:{color:"#1d2c40"}},
+        y:{ticks:{color:"#64748b",font:{size:9},stepSize:1},grid:{color:"#1d2c40"},beginAtZero:true}
+      }
+    }
+  });
+}
+
+async function clearExercise(id){
+  if(!confirm(`Limpar todos os dados da Dinâmica ${id}?`)) return;
+  const ex=EX[id];
+  if(ex.type==="text") await store.set(ex.key,JSON.stringify([]));
+  else if(ex.type==="singleMC") await store.set(ex.key,JSON.stringify({}));
+  else if(ex.type==="multiMC") for(const q of ex.questions) await store.set(q.key,JSON.stringify({}));
+  else if(ex.type==="scenarios") for(const sc of ex.scenarios) await store.set(sc.key,JSON.stringify({}));
+  renderDashboard();
+}
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+// ═══════════════════════════════════════════════════
+// 8. ROUTER
+// ═══════════════════════════════════════════════════
+function showView(name){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("show"));
+  document.getElementById("v-"+name).classList.add("show");
+}
+
+function route(){
+  clearInterval(dashTimer);
+  const h=location.hash.slice(1)||"slide-0";
+  if(h.startsWith("slide-")){
+    showView("pres");
+    renderPresentation(parseInt(h.split("-")[1])||0);
+  } else if(h.startsWith("audience-")){
+    showView("aud");
+    renderAudience(parseInt(h.split("-")[1]));
+  } else if(h==="dashboard"){
+    showView("dash");
+    renderDashboard();
+    dashTimer=setInterval(renderDashboard,5000);
+  } else {
+    showView("pres");
+    renderPresentation(0);
+  }
+}
+
+window.addEventListener("hashchange",route);
+window.addEventListener("load", async () => {
+  await store.init();
+  route();
+});
+</script>
+</body>
+</html>
+
+```
