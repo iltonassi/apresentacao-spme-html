@@ -356,7 +356,10 @@ textarea::placeholder{color:var(--subtle)}
 <div id="v-dash" class="view">
   <div id="dash-head">
     <h2>📊 Respostas em Tempo Real</h2>
-    <button class="dash-back" onclick="history.back()">← Voltar</button>
+    <div style="display:flex;gap:.5rem">
+      <button class="dash-back" onclick="resetSetup()" title="Alterar URL do Firebase">🔧</button>
+      <button class="dash-back" onclick="history.back()">← Voltar</button>
+    </div>
   </div>
   <div id="dash-grid"></div>
   <p class="dash-tick" id="dash-tick">Atualiza a cada 5 s</p>
@@ -1152,29 +1155,31 @@ function showOK(){
 // ═══════════════════════════════════════════════════
 // 6. BACK-END: FIREBASE REALTIME DATABASE (REST)
 // ═══════════════════════════════════════════════════
-// PASSO 1 → console.firebase.google.com → "Add project" (gratuito)
-// PASSO 2 → Build → Realtime Database → "Create database" → modo teste
-// PASSO 3 → Copie a URL do banco (ex: https://meu-projeto-default-rtdb.firebaseio.com)
-// PASSO 4 → Cole abaixo substituindo "SEU-PROJETO-default-rtdb"
-const FB_URL="https://webinar-rh-33d48-default-rtdb.firebaseio.com/";
-const FB_NS="/rh-encruzilhada"; // namespace isolado; mude para reiniciar o webinar
+// URL lida do localStorage → configurável pela interface, sem editar código
+const FB_NS="/rh-encruzilhada";
 
-function fbOk(){return!FB_URL.includes("https://webinar-rh-33d48-default-rtdb.firebaseio.com/");}
+function getFirebaseUrl(){
+  return(localStorage.getItem("fb_url")||"").replace(/\/+$/,"");
+}
+function fbOk(){
+  const u=getFirebaseUrl();
+  return u.length>10&&u.includes("firebaseio.com");
+}
 
 async function fbGet(key){
   if(!fbOk()) return null;
   try{
-    const r=await fetch(`${FB_URL}${FB_NS}/${key}.json`);
+    const r=await fetch(`${getFirebaseUrl()}${FB_NS}/${key}.json`);
+    if(!r.ok) return null;
     const d=await r.json();
     return(d&&typeof d==="object")?d:null;
   }catch(e){return null;}
 }
 
-// POST cria filho com ID automático → sem conflito de escrita simultânea
 async function fbPost(key,data){
   if(!fbOk()) return;
   try{
-    await fetch(`${FB_URL}${FB_NS}/${key}.json`,{
+    await fetch(`${getFirebaseUrl()}${FB_NS}/${key}.json`,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(data)
@@ -1184,16 +1189,25 @@ async function fbPost(key,data){
 
 async function fbDel(key){
   if(!fbOk()) return;
-  try{await fetch(`${FB_URL}${FB_NS}/${key}.json`,{method:"DELETE"});}catch(e){}
+  try{await fetch(`${getFirebaseUrl()}${FB_NS}/${key}.json`,{method:"DELETE"});}catch(e){}
 }
 
-// Cada voto = nó independente → sem race condition
-async function vote(key,idx){
-  await fbPost(key,{opt:idx,ts:Date.now()});
+async function vote(key,idx){await fbPost(key,{opt:idx,ts:Date.now()});}
+async function pushText(key,text){await fbPost(key,{t:text.slice(0,500),ts:Date.now()});}
+
+function saveSetup(){
+  const val=(document.getElementById("fb-input")||{}).value;
+  if(!val||!val.trim().includes("firebaseio.com")){
+    alert("URL inválida — deve conter 'firebaseio.com'.\nEx: https://meu-projeto-default-rtdb.firebaseio.com");
+    return;
+  }
+  localStorage.setItem("fb_url",val.trim().replace(/\/+$/,""));
+  renderDashboard();
 }
 
-async function pushText(key,text){
-  await fbPost(key,{t:text.slice(0,500),ts:Date.now()});
+function resetSetup(){
+  if(confirm("Remover URL do Firebase salva?"))
+    {localStorage.removeItem("fb_url");renderDashboard();}
 }
 
 // Soma votos por opção a partir do objeto Firebase {"-ID":{opt:N,ts:T}, ...}
@@ -1210,11 +1224,38 @@ function renderDashboard(){
   Object.values(dCharts).forEach(c=>{try{c.destroy();}catch(e){}});
   Object.keys(dCharts).forEach(k=>delete dCharts[k]);
   const grid=document.getElementById("dash-grid");
+
+  if(!fbOk()){
+    grid.innerHTML=`
+      <div style="grid-column:1/-1;max-width:480px;margin:2rem auto;text-align:center;padding:1rem">
+        <div style="font-size:2.5rem;margin-bottom:.75rem">🔧</div>
+        <h2 style="margin-bottom:.5rem;font-size:1.2rem">Configure o Firebase</h2>
+        <p style="color:var(--muted);font-size:.85rem;line-height:1.7;margin-bottom:1.2rem">
+          Crie um banco gratuito em
+          <a href="https://console.firebase.google.com" target="_blank" style="color:var(--blue-l)">console.firebase.google.com</a>
+          → <strong>Add project</strong> → <strong>Build → Realtime Database</strong>
+          → <strong>Create database (modo teste)</strong>.<br>
+          Copie a URL gerada e cole abaixo.
+        </p>
+        <input id="fb-input" type="url"
+          placeholder="https://meu-projeto-default-rtdb.firebaseio.com"
+          style="width:100%;padding:.85rem 1rem;background:var(--surf2);border:1px solid var(--brd);
+                 border-radius:9px;color:var(--txt);font-size:.88rem;margin-bottom:.65rem;outline:none;
+                 box-sizing:border-box">
+        <button onclick="saveSetup()"
+          style="width:100%;padding:.9rem;background:var(--blue);border:none;border-radius:9px;
+                 color:white;font-weight:700;font-size:.95rem;cursor:pointer">
+          Ativar Dashboard →
+        </button>
+      </div>`;
+    return;
+  }
+
   grid.innerHTML=[1,2,3,4,5,6].map(id=>`
     <div class="d-card" id="dc-${id}">
       <h3>${EX[id].title}</h3>
       <div class="d-meta">${EX[id].moment}</div>
-      <div id="dci-${id}"><p class="d-empty">Aguardando respostas...</p></div>
+      <div id="dci-${id}"><p class="d-empty">Carregando...</p></div>
       <button class="clear-btn" onclick="clearExercise(${id})">🗑 Limpar dados</button>
     </div>`).join("");
   [1,2,3,4,5,6].forEach(id=>loadDashCard(id));
@@ -1226,16 +1267,6 @@ async function loadDashCard(id){
   const ex=EX[id];
   const el=document.getElementById(`dci-${id}`);
   if(!el) return;
-
-  // Aviso de configuração pendente
-  if(!fbOk()){
-    el.innerHTML=`<p style="color:var(--gold-l);font-size:.78rem;line-height:1.6">
-      ⚠️ Firebase não configurado.<br>
-      Edite <code>FB_URL</code> no código com a URL do seu banco.<br>
-      <a href="https://console.firebase.google.com" target="_blank" style="color:var(--blue-l)">console.firebase.google.com</a>
-    </p>`;
-    return;
-  }
 
   if(ex.type==="text"){
     const data=await fbGet(ex.key);
