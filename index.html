@@ -1013,10 +1013,17 @@ function nav(d){location.hash=`slide-${curSlide+d}`;}
 function genQR(exId){
   const el=document.getElementById(`qr-${exId}`);
   if(!el||typeof QRCode==="undefined") return;
-  const url=location.href.split('#')[0]+'#audience-'+exId;
+  const fb=getFirebaseUrl();
+  const fbParam=fb?("?fb="+encodeURIComponent(fb)):"";
+  const url=location.origin+location.pathname+fbParam+"#audience-"+exId;
+  // Update the visible link on the slide
+  const linkEl=document.getElementById("qr-url-"+exId);
+  if(linkEl){linkEl.href=url;linkEl.textContent=url;}
   el.innerHTML="";
   try{
-    new QRCode(el,{text:url,width:180,height:180,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
+    new QRCode(el,{text:url,width:180,height:180,
+      colorDark:"#000000",colorLight:"#ffffff",
+      correctLevel:QRCode.CorrectLevel.L}); // L = menor/mais fácil de escanear
   }catch(e){el.innerHTML=`<p style="font-size:.6rem;color:#333;word-break:break-all">${url}</p>`;}
 }
 
@@ -1159,6 +1166,10 @@ function showOK(){
 const FB_NS="/rh-encruzilhada";
 
 function getFirebaseUrl(){
+  try{
+    const p=new URL(location.href).searchParams.get("fb");
+    if(p) return decodeURIComponent(p).replace(/\/+$/,"");
+  }catch(e){}
   return(localStorage.getItem("fb_url")||"").replace(/\/+$/,"");
 }
 function fbOk(){
@@ -1198,7 +1209,7 @@ async function pushText(key,text){await fbPost(key,{t:text.slice(0,500),ts:Date.
 function saveSetup(){
   const val=(document.getElementById("fb-input")||{}).value;
   if(!val||!val.trim().includes("firebaseio.com")){
-    alert("URL inválida — deve conter 'firebaseio.com'.\nEx: https://meu-projeto-default-rtdb.firebaseio.com");
+    alert("URL inválida — deve conter 'firebaseio.com'.\nEx: https://webinar-rh-33d48-default-rtdb.firebaseio.com/");
     return;
   }
   localStorage.setItem("fb_url",val.trim().replace(/\/+$/,""));
@@ -1238,7 +1249,7 @@ function renderDashboard(){
           Copie a URL gerada e cole abaixo.
         </p>
         <input id="fb-input" type="url"
-          placeholder="https://webinar-rh-33d48-default-rtdb.firebaseio.com"
+          placeholder="https://meu-projeto-default-rtdb.firebaseio.com"
           style="width:100%;padding:.85rem 1rem;background:var(--surf2);border:1px solid var(--brd);
                  border-radius:9px;color:var(--txt);font-size:.88rem;margin-bottom:.65rem;outline:none;
                  box-sizing:border-box">
